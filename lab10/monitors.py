@@ -19,7 +19,47 @@ def escalation_rate(trials):
     return sum(t["status"] == "escalated" for t in trials) / max(1, len(trials))
 
 
+def _trial_review_cost_vnd(trial):
+    kind = trial.get("review_kind")
+    if not kind:
+        return 0
+    if kind == "escalated":
+        return 10000
+    has_note = any(e.get("type") == "decision_note" for e in trial.get("events", []))
+    return 4000 if has_note else 10000
+
+
+def max_warehouse_cost_per_ticket_vnd(trials):
+    """Chi phí mỗi ticket lớn nhất theo từng kho đã biết (tiền máy + công người duyệt/kiểm lại)."""
+    by_wh = {}
+    for t in trials:
+        wh = t.get("warehouse")
+        if not wh:
+            continue
+        cost = (t.get("cost_vnd") or 0) + _trial_review_cost_vnd(t)
+        by_wh.setdefault(wh, []).append(cost)
+    if not by_wh:
+        return 0.0
+    return max(sum(cs) / len(cs) for cs in by_wh.values())
+
+
+def duplicate_or_llm_budget_guard_rate(trials):
+    """Tỉ lệ lần chạy chạm cổng chặn hoàn lặp hoặc cổng trần ngân sách LLM mỗi ticket."""
+    hits = 0
+    for t in trials:
+        evs = t.get("events", [])
+        hit = any(
+            (e.get("type") == "guard" and e.get("kind") == "block_duplicate_refund")
+            or (e.get("type") == "business_gate" and e.get("gate") == "cost_budget_per_ticket_vnd")
+            for e in evs
+        )
+        hits += int(hit)
+    return hits / max(1, len(trials))
+
+
 MONITORS = {
     "escalation_rate": escalation_rate,     # có sẵn; KHÔNG tính là metric mới của đội
+    "max_warehouse_cost_per_ticket_vnd": max_warehouse_cost_per_ticket_vnd,
+    "duplicate_or_llm_budget_guard_rate": duplicate_or_llm_budget_guard_rate,
 }
 STARTER_MONITORS = ("escalation_rate",)
