@@ -231,13 +231,13 @@ Mở lại Phiếu B mục B3. Ghi ở đây những dòng đổi so với vòng
 
 *Mục riêng, không ghi đè HAZOP vòng 1 ở Phiếu B mục B4. Năm guideword và nghĩa của chúng: xem Phiếu B mục B4.*
 
-Tool chọn phân tích: `________________`
+Tool chọn phân tích: `issue_refund`
 
 | Tham số / dòng dữ liệu | Guideword (WRONG / INVALID / INCOMPLETE / PERTURBED / INCAPABLE) | Lệch cụ thể (mã ticket, trường dữ liệu của thẻ) | Hậu quả, cho ai | Hiện có gì ngăn? | Gate đề xuất + tầng |
 |---|---|---|---|---|---|
-| | | | | | |
-| | | | | | |
-| | | | | | |
+| Yêu cầu hoàn theo `order_id` qua nhiều kênh | PERTURBED | `S5-01` qua app và `S5-02` qua Zalo cùng xin hoàn cho `O-2501`. Trace baseline `S5-02@11` ghi thêm 25.000đ dù nhãn yêu cầu hoàn 0đ. | LogiX chi trùng, kế toán phải đối soát thêm. | `_gate_issue_refund` đối chiếu sổ cái với quyền lợi còn lại trước khi ghi. | Chặn khi quyền lợi còn lại bằng 0. Chuyển đối soát khi giao dịch giữa hai kênh chưa khớp (chặn và vận hành). |
+| Số tiền đã hoàn theo đơn | WRONG | Ở `prepared`, `S5-21` đã được hoàn một phần nhưng lệnh hoàn tiếp bị chặn vì đơn đã có giao dịch. Nhãn yêu cầu hoàn thêm 12.000đ. | Khách nhận thiếu. Trưởng ca phải rà lại quyền lợi. | `after` tính số tiền còn được hoàn theo sổ cái và đạt ca `S5-21`. | Giới hạn khoản ghi bằng quyền lợi còn lại. `NV-HANH` và `NV-OANH` đối soát khi số liệu mâu thuẫn (chặn và vận hành). |
+| Dữ liệu giao dịch trả về từ sổ cái | INCOMPLETE | Nhánh giả định chưa quan sát trên trace: khi xử lý lại yêu cầu như `S5-02`, truy vấn sổ cái thiếu giao dịch trước đó vì dữ liệu chưa đồng bộ. | Trợ lý có thể tính quyền lợi còn lại cao hơn thực tế, khiến LogiX hoàn trùng. | Đối chiếu hiện tại dựa trên các dòng sổ cái đọc được. Chưa có bằng chứng kiểm thử tình huống dữ liệu thiếu. | Đề xuất tạm giữ lệnh hoàn khi dữ liệu sổ cái chưa xác nhận được, chuyển `NV-OANH` đối soát trước khi `NV-HANH` xét duyệt (chặn có điều kiện và vận hành). |
 
 Bắt buộc: ít nhất ba dòng, trong đó **một dòng là nhánh bàn chưa thấy trên trace** lúc viết.
 
@@ -387,9 +387,9 @@ Ghi các dòng đổi sau sự cố. Mỗi dòng vẫn phải có một PIC có 
 
 | # nhóm | Trạng thái mới (Xong / Chưa / Không áp dụng) | Bằng chứng mới (mã lần chạy, mục phiếu, số trong report) | PIC |
 |---|---|---|---|
-| 6 · Chi phí | Chưa | `R-S5-after-20261118-232032-e65e2b`: HCM-B2B 10.382đ/ticket > 10.000đ làm tay, LLM cao nhất 665đ, ROI 0,54. | Nguyễn Đức Trọng (đề xuất theo B5) |
-| 7 · Vận hành | Chưa | `after`: 50% chuyển duyệt, 1 người trực, 6 ca/giờ, chờ lâu nhất 0 phút và 0 ca ùn. Kênh cảnh báo `#ops-logix-refund-alerts` đã cấu hình. Chờ kiểm thử tải cao điểm. | Lê Hữu Toàn (đề xuất theo B5) |
-| 8 · Con người, pháp lý | Chưa | `after`: 0 lỗi hãng oan, 0 lần lộ PII và `S5-21` đã hết thiếu hoàn. Còn chờ xác nhận đầu mối khiếu nại và thời hạn báo đối tác. | Lê Hữu Toàn (đề xuất theo B5) |
+| 6 · Chi phí | Chưa | `R-S5-after-20261118-232032-e65e2b`: HCM-B2B 10.382đ/ticket > 10.000đ làm tay, LLM cao nhất 665đ, ROI 0,54. | Nguyễn Đức Trọng |
+| 7 · Vận hành | Chưa | `after`: 50% chuyển duyệt, 1 người trực, 6 ca/giờ, chờ lâu nhất 0 phút và 0 ca ùn. Kênh cảnh báo `#ops-logix-refund-alerts` đã cấu hình. Chờ kiểm thử tải cao điểm. | Lê Hữu Toàn |
+| 8 · Con người, pháp lý | Chưa | `after`: 0 lỗi hãng oan, 0 lần lộ PII và `S5-21` đã hết thiếu hoàn. Còn chờ xác nhận đầu mối khiếu nại và thời hạn báo đối tác. | Lê Hữu Toàn |
 
 ### Runbook 4 · Sau sự cố trên thẻ (vòng 2)
 
