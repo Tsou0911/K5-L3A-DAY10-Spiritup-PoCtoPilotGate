@@ -1,10 +1,10 @@
 {
   "_huong_dan": "Cổng kinh doanh, vận hành, pháp lý mà trợ lý PHẢI tuân theo. Bàn điền ở vòng 1, chốt bằng python3 -m lab10.checkpoint, rồi được sửa tiếp ở vòng 2. null = chưa đặt cổng này. Giải thích từng dòng: docs/guide.md, mục Cổng trong config (#ban-do).",
   "business": {
-    "daily_refund_cap_vnd": null,
-    "cost_budget_per_ticket_vnd": null,
+    "daily_refund_cap_vnd": 2000000,
+    "cost_budget_per_ticket_vnd": 1500,
     "pilot_scope": {"mode": "all", "warehouses": [], "percent": 100},
-    "roi_min": null
+    "roi_min": 0.1
   },
   "operations": {
     "pic": "NV-TUNG",
@@ -18,7 +18,7 @@
       "Khi phát hiện lộ dữ liệu cá nhân trong thông báo cho hãng, tắt notify_carrier.",
       "Khi chưa cô lập được thao tác gây hại hoặc thiệt hại vẫn tiếp diễn, dừng toàn bộ thao tác ghi."
     ],
-    "alert_channel": "",
+    "alert_channel": "#ops-logix-refund-alerts",
     "decision_note": false,
     "review_sampling_pct": 0
   },
