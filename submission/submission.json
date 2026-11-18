@@ -1,12 +1,16 @@
 {
-  "team": "",
-  "members": [],
-  "incident": "",
-  "decision_v1": "",
+  "team": "Spiritup",
+  "members": [
+    "VuLeDuc-2A202603683",
+    "LeHuuToan-2A202603660",
+    "NguyenDucTrong-2A202603644"
+  ],
+  "incident": "S5",
+  "decision_v1": "Tiếp tục",
   "decision_v2": "",
   "three_lines": {
-    "environment_assumption": "",
-    "reduce_or_prevent": "",
-    "measure_in_pilot": ""
+    "environment_assumption": "Nhóm giả định tỷ lệ và nhịp đến của ca cần duyệt ở kho sỉ tương đương các kho khác, nhưng tải thực tế có thể dồn theo giờ và vượt công suất trực.",
+    "reduce_or_prevent": "Quy trình giữ ca nghi hoàn trùng để đối soát sổ cái giúp giảm rủi ro hoàn sai khi dữ liệu chưa khớp, vì hiệu quả còn phụ thuộc vào độ đầy đủ của sổ cái và việc người duyệt thực hiện đối soát.",
+    "measure_in_pilot": "Trước Bước đánh giá 2, cần đo lượng ca chuyển duyệt theo giờ và theo kho, thời gian chờ lâu nhất so với SLA 60 phút, số ca ùn và chi phí mỗi ticket so với xử lý tay."
   }
 }
