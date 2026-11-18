@@ -30,8 +30,8 @@ Mỗi lệnh `lab10.eval` và `lab10.grade` tự ghi một dòng vào `runs/jour
 
 | # | Mã lần chạy | Bộ ticket · mốc | Đổi MỘT thứ gì so với lần trước | pass_rate (khoảng tin cậy 95%) | pass_k | Hoàn sai (đ) · lỗi hãng oan · lộ dữ liệu | Tỉ lệ chuyển người | Kết luận (một câu) |
 |---|---|---|---|---|---|---|---|---|
-| 1 | | Sx · prepared | nhận thẻ đã bốc, chưa sửa thêm (đúng cổng vòng 1 đã chốt) | | | | | |
-| 2 | | Sx · after | | | | | | |
+| 1 | `R-S5-prepared-20261118-230217-dd9811` | S5 · prepared | Bản chốt vòng 1 `fd9e7ea0` | 0,9667 | 0,9667 | 0đ · 0 · 0 | 50% | HCM-B2B vẫn đắt hơn làm tay. |
+| 2 | `R-S5-after-20261118-230217-dd9811` | S5 · after | Đo bản hiện hành, chưa đổi quy trình vòng 2 | 0,9667 (0,90–1,00) | 0,9667 | 0đ · 0 · 0 | 50% | Các số đo giống `prepared`. |
 | 3 | | Sx · after | | | | | | |
 | 4 | | base · after | (kiểm không regression) | | | | | |
 
@@ -47,14 +47,14 @@ Chạy **trước khi sửa bất cứ thứ gì**:
 python3 -m lab10.grade --incident Sx
 ```
 
-- Mã lần chạy grade: chờ báo cáo · base: `R-S5-before-20261118-215351-6f84ae` · prepared: chờ bản chốt vòng 1.
-- Cổng vòng 1 đỡ được ô / con số nào (so cột base với cột prepared): chờ `prepared`. Baseline ghi 12 ca chuyển duyệt/ngày giả lập và 0 ca ùn.
-- Khối kinh doanh và vận hành còn dòng nào vượt trần: baseline ghi HCM-B2B 11.326đ/ticket so với 10.000đ làm tay và chi phí LLM cao nhất 2.412đ so với trần 1.500đ. Chờ `prepared` để đối chiếu.
+- Mã lần chạy grade: `R-S5-grade-20261118-230216-dd9811` · base: `R-S5-before-20261118-230216-dd9811` · prepared: `R-S5-prepared-20261118-230217-dd9811`.
+- Cổng vòng 1 giảm hoàn sai từ 890.000đ xuống 0đ qua 150 lượt thử và giảm lỗi hãng oan từ 20 xuống 0. Chuyển duyệt tăng từ 40% lên 50%, chờ tối đa và số ca ùn vẫn bằng 0.
+- HCM-B2B giảm từ 11.326đ xuống 10.382đ/ticket, vẫn cao hơn 10.000đ làm tay. LLM cao nhất giảm từ 2.412đ xuống 664đ, dưới trần 1.500đ.
 
 **Mở lại pre-mortem (Phiếu B mục B6), viết bằng bút khác màu.** Với thẻ S1, S3, S4, S5 đây là một phần của phần riêng theo thẻ.
 
 - Sự cố trên thẻ thuộc lăng kính nào (kỹ thuật, kinh doanh, con người và vận hành, pháp lý)? Kinh doanh, con người và vận hành. Một ca chuyển duyệt sau khi chạy trợ lý phát sinh cả chi phí máy và công duyệt.
-- Có nằm trong các lý do bàn đã viết không? B6 nêu rủi ro ghi đúp ở lăng kính kỹ thuật. Chi phí kép ở kho sỉ là lý do bổ sung ở lăng kính vận hành. Chờ `prepared` để đo mức giảm.
+- B6 nêu rủi ro ghi đúp ở lăng kính kỹ thuật. Chi phí kép ở kho sỉ là lý do bổ sung ở lăng kính vận hành. `prepared` giảm 944đ/ticket tại HCM-B2B.
 - Lý do còn thiếu, thêm bây giờ:
 
 | Lý do thất bại (viết ở thì quá khứ) | Lăng kính | Kiểm được bằng gì (trace / data / config nào) |
@@ -319,7 +319,7 @@ python3 -m lab10.grade --incident Sx
 | [2] | | | | | |
 | [3] | | | | | |
 
-Đề xuất vận hành để ghép với nhánh tương ứng ở C6: giữ ca nghi hoàn trùng để `NV-HANH` kiểm tra khoản còn được hoàn và `NV-OANH` đối soát sổ cái. Nếu xác nhận hoàn sai, báo `NV-TUNG` tắt `issue_refund` theo B7.5. Quy trình giúp giảm rủi ro và giới hạn thiệt hại. Chờ mã `after` để kiểm chứng hiệu quả và cập nhật C9.
+Đề xuất vận hành để ghép với nhánh tương ứng ở C6: giữ ca nghi hoàn trùng để `NV-HANH` kiểm tra khoản còn được hoàn và `NV-OANH` đối soát sổ cái. Nếu xác nhận hoàn sai, báo `NV-TUNG` tắt `issue_refund` theo B7.5. Quy trình giới hạn thiệt hại sau phát hiện. Trace `S5-21@11` ở `R-S5-after-20261118-230217-dd9811` cho thấy cổng ghi chặn cả khoản 12.000đ hợp lệ khi đơn đã có giao dịch. Khi đối soát cần phân biệt hoàn trùng với phần quyền lợi còn lại.
 
 ---
 
@@ -345,9 +345,9 @@ Thẻ S5 dùng mục này cho một con số kinh doanh: chi phí mỗi ticket t
 
 <a id="c9"></a>
 
-## C9 · Câu 3.7 · Fault tree SAU khi sửa (mã lần chạy: `__________`)
+## C9 · Câu 3.7 · Fault tree SAU khi sửa (mã lần chạy: `R-S5-after-20261118-230217-dd9811`)
 
-Vẽ lại cây ở C6. Ở mỗi nhánh đã xử lý, thêm một nút `VÀ [gate … hỏng]` và ghi:
+Vẽ lại cây ở C6. Bằng chứng vận hành để ghép nhánh: `prepared` và `after` cùng ghi HCM-B2B 10.382đ/ticket. Cảnh báo chi phí theo kho giúp phát hiện nhánh này. Cổng ghi loại hoàn sai trong các ca S5 đã chạy, nhưng `S5-21` vẫn thiếu hoàn 60.000đ qua 5 lượt thử. Ở mỗi nhánh đã xử lý, thêm một nút `VÀ [gate … hỏng]` và ghi:
 
 ```
 [ĐỈNH] ______________________________
@@ -387,9 +387,9 @@ Ghi các dòng đổi sau sự cố. Mỗi dòng vẫn phải có một PIC có 
 
 | # nhóm | Trạng thái mới (Xong / Chưa / Không áp dụng) | Bằng chứng mới (mã lần chạy, mục phiếu, số trong report) | PIC |
 |---|---|---|---|
-| 6 · Chi phí | Chưa | `R-S5-before-20261118-215351-6f84ae`: HCM-B2B 11.326đ/ticket, LLM cao nhất 2.412đ, ROI -0,33. Chờ báo cáo sau sửa. | Nguyễn Đức Trọng (đề xuất theo B5) |
-| 7 · Vận hành | Chưa | Baseline ghi 12 ca chuyển duyệt/ngày và 0 ca ùn. Chờ đối chiếu `prepared` và `after`. | Lê Hữu Toàn (đề xuất theo B5) |
-| 8 · Con người, pháp lý | Chưa | Baseline ghi 20 lỗi hãng oan qua 150 lượt thử, 0 lần lộ PII. Chờ đối soát và kết quả sau sửa. | Lê Hữu Toàn (đề xuất theo B5) |
+| 6 · Chi phí | Chưa | `after`: HCM-B2B 10.382đ/ticket > 10.000đ làm tay, LLM cao nhất 664đ, ROI 0,54. | Nguyễn Đức Trọng (đề xuất theo B5) |
+| 7 · Vận hành | Chưa | `after`: 50% chuyển duyệt, 1 người trực, 6 ca/giờ, chờ lâu nhất 0 phút và 0 ca ùn. Chờ kiểm thử tải cao điểm và chốt kênh cảnh báo. | Lê Hữu Toàn (đề xuất theo B5) |
+| 8 · Con người, pháp lý | Chưa | `after`: 0 lỗi hãng oan, 0 lần lộ PII. `S5-21` vẫn thiếu hoàn, cần đối soát quyền lợi còn lại. | Lê Hữu Toàn (đề xuất theo B5) |
 
 ### Runbook 4 · Sau sự cố trên thẻ (vòng 2)
 
