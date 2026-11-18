@@ -309,10 +309,12 @@ Mỗi con số kèm một câu lý do, lấy từ `data/world.json` → `ops_lim
 
 | Khoá | Giá trị bàn đặt | Lý do (một câu, có số) |
 |---|---|---|
-| `business.daily_refund_cap_vnd` | | |
-| `business.cost_budget_per_ticket_vnd` | | |
-| `business.pilot_scope` (all / warehouse / percent) | | |
-| `business.roi_min` | | |
+| `business.daily_refund_cap_vnd` |2.000.000 VNĐ |Giới hạn tổng tiền hoàn tự động mỗi ngày ở mức 2.000.000 VNĐ theo ngân sách Finance đã thống nhất trong2.000.000 VNĐ ops_limits.daily_auto_refund_budget_vnd; khoản vượt giới hạn phải chuyển người duyệt. |
+| `business.cost_budget_per_ticket_vnd` |1.500 VNĐ |Giới hạn chi phí LLM tối đa 1.500 VNĐ/ticket theo ops_limits.max_llm_cost_per_ticket_vnd, nhằm kiểm soát chi phí xử lý và chuyển ticket cho nhân viên khi có nguy cơ vượt ngân sách. |
+| `business.pilot_scope` (all / warehouse / percent) |Chỉ triển khai trên 10% ticket trong giai đoạn pilot | Percent – 10%nhằm giới hạn phạm vi ảnh hưởng, kiểm chứng chất lượng xử lý và hiệu quả tài chính trước khi mở rộng.|
+| `business.roi_min` |0,1 (10%) |Yêu cầu ROI tối thiểu 10%, tương ứng với định hướng tiết kiệm chi phí so với xử lý thủ công (10.000 VNĐ/ticket), đồng thời phù hợp với ngưỡng ROI đã xác lập trong bộ tiêu chí nghiệm thu. |
+
+**Quyết định kinh doanh:** Ưu tiên triển khai pilot có kiểm soát trên 10% ticket, không vượt ngân sách hoàn tự động 2 triệu VNĐ/ngày và chi phí LLM 1.500 VNĐ/ticket. Chỉ xem xét mở rộng khi hệ thống chứng minh được ROI tối thiểu 10% và đáp ứng các tiêu chí an toàn, vận hành đã thống nhất.
 
 ### B7.5 · Câu 2.10 · Cổng con người, vận hành, pháp lý + Runbook phần 1–3
 
