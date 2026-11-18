@@ -345,23 +345,23 @@ Thẻ S5 dùng mục này cho một con số kinh doanh: chi phí mỗi ticket t
 
 <a id="c9"></a>
 
-## C9 · Câu 3.7 · Fault tree SAU khi sửa (mã lần chạy: `R-S5-after-20261118-230217-dd9811`)
+## C9 · Câu 3.7 · Fault tree SAU khi sửa (mã lần chạy: `R-S5-after-20261118-232032-e65e2b`)
 
-Vẽ lại cây ở C6. Bằng chứng vận hành để ghép nhánh: `prepared` và `after` cùng ghi HCM-B2B 10.382đ/ticket. Cảnh báo chi phí theo kho giúp phát hiện nhánh này. Cổng ghi loại hoàn sai trong các ca S5 đã chạy, nhưng `S5-21` vẫn thiếu hoàn 60.000đ qua 5 lượt thử. Ở mỗi nhánh đã xử lý, thêm một nút `VÀ [gate … hỏng]` và ghi:
+Đối chiếu cây C6 với lần chạy mới. `prepared` thiếu hoàn 60.000đ qua 5 lượt thử của `S5-21`. `after` còn 0đ thiếu hoàn và HCM-B2B vẫn đắt hơn làm tay.
 
 ```
-[ĐỈNH] ______________________________
+[ĐỈNH] Pilot S5 tốn thêm chi phí hoặc gây thất thoát tiền
  └─ HOẶC
- ├─ [1] ______________ VÀ [gate ______ hỏng]
- ├─ [2] ______________ VÀ [gate ______ hỏng]
- └─ [3] ______________ (còn hở?)
+ ├─ [1] Hoàn sai hoặc thiếu hoàn VÀ [cổng đối chiếu quyền lợi còn lại với sổ cái hỏng]
+ ├─ [2] Tiền LLM vượt trần VÀ [cổng ngân sách mỗi ticket hỏng]
+ └─ [3] Kho sỉ phát sinh cả tiền máy và công duyệt (còn hở, monitor đã phát hiện)
 ```
 
 | Nhánh | Gate (hàm trong `guards.py` / khoá config / metric trong `monitors.py`) | Tầng gate (phát hiện / chặn / giới hạn thiệt hại / vận hành) | Giảm hay ngăn? Vì sao | Nhánh còn hở |
 |---|---|---|---|---|
-| [1] | | | | |
-| [2] | | | | |
-| [3] | | | | |
+| [1] | `_gate_issue_refund` đối chiếu sổ cái và quyền lợi còn lại | Chặn trước ghi | Chặn hoàn vượt quyền lợi trên các ca đã thử. `after` ghi 0đ hoàn sai và 0đ thiếu hoàn. | Cần đối soát nếu sổ cái cập nhật chậm hoặc thiếu giao dịch. |
+| [2] | `business.cost_budget_per_ticket_vnd` | Giới hạn thiệt hại | Cổng giữ mức cao nhất trong lần chạy ở 665đ, dưới trần 1.500đ. | Tiếp tục theo dõi phân bố chi phí LLM trong pilot. |
+| [3] | `max_warehouse_cost_per_ticket_vnd` | Phát hiện | Cảnh báo ghi nhận HCM-B2B 10.382đ/ticket, cao hơn 10.000đ làm tay. | Chờ đầu mối kinh doanh quyết định `pilot_scope`. |
 
 ---
 
@@ -387,9 +387,9 @@ Ghi các dòng đổi sau sự cố. Mỗi dòng vẫn phải có một PIC có 
 
 | # nhóm | Trạng thái mới (Xong / Chưa / Không áp dụng) | Bằng chứng mới (mã lần chạy, mục phiếu, số trong report) | PIC |
 |---|---|---|---|
-| 6 · Chi phí | Chưa | `after`: HCM-B2B 10.382đ/ticket > 10.000đ làm tay, LLM cao nhất 664đ, ROI 0,54. | Nguyễn Đức Trọng (đề xuất theo B5) |
-| 7 · Vận hành | Chưa | `after`: 50% chuyển duyệt, 1 người trực, 6 ca/giờ, chờ lâu nhất 0 phút và 0 ca ùn. Chờ kiểm thử tải cao điểm và chốt kênh cảnh báo. | Lê Hữu Toàn (đề xuất theo B5) |
-| 8 · Con người, pháp lý | Chưa | `after`: 0 lỗi hãng oan, 0 lần lộ PII. `S5-21` vẫn thiếu hoàn, cần đối soát quyền lợi còn lại. | Lê Hữu Toàn (đề xuất theo B5) |
+| 6 · Chi phí | Chưa | `R-S5-after-20261118-232032-e65e2b`: HCM-B2B 10.382đ/ticket > 10.000đ làm tay, LLM cao nhất 665đ, ROI 0,54. | Nguyễn Đức Trọng (đề xuất theo B5) |
+| 7 · Vận hành | Chưa | `after`: 50% chuyển duyệt, 1 người trực, 6 ca/giờ, chờ lâu nhất 0 phút và 0 ca ùn. Kênh cảnh báo `#ops-logix-refund-alerts` đã cấu hình. Chờ kiểm thử tải cao điểm. | Lê Hữu Toàn (đề xuất theo B5) |
+| 8 · Con người, pháp lý | Chưa | `after`: 0 lỗi hãng oan, 0 lần lộ PII và `S5-21` đã hết thiếu hoàn. Còn chờ xác nhận đầu mối khiếu nại và thời hạn báo đối tác. | Lê Hữu Toàn (đề xuất theo B5) |
 
 ### Runbook 4 · Sau sự cố trên thẻ (vòng 2)
 
@@ -400,7 +400,7 @@ Ghi các dòng đổi sau sự cố. Mỗi dòng vẫn phải có một PIC có 
 | Bàn đổi gì về **người** (số người trực, ai đứng tên, ai được gọi)? | Cấu hình hiện tại có 1 người, 6 ca/giờ, `NV-HANH` duyệt vượt hạn mức và `NV-TUNG` giữ công tắc theo B7.5. Baseline có 0 ca ùn. Cần số liệu theo giờ trước khi quyết định tăng người. |
 | Bàn đổi gì về **phạm vi** hoặc **quy trình** (kiểm mẫu, ghi chú giải thích, trần)? | Đề xuất đối chiếu sổ cái khi nghi hoàn trùng theo C7. Đầu mối kinh doanh quyết định phạm vi và trần theo B7.5–B7.6. |
 | Nói gì với bên thứ ba bị ảnh hưởng (hãng, shop, người nhận, nhân viên duyệt), ai nói, trong bao lâu? | `NV-TUNG` điều phối việc dừng, `NV-HANH` phân công xử lý tay và `NV-OANH` đối soát giao dịch đã xác minh với hãng, shop. B7.5 chưa chỉ định người tiếp nhận khiếu nại hay hạn báo đối tác. Hạn phản hồi CFO trên thẻ S5 là trước 17h. |
-| Dữ liệu cá nhân nào đã rời hệ thống mà không thu hồi được? Báo cho ai? | Baseline S5 ghi `pii_leaks = 0`. Nếu phát hiện rò rỉ trong thông báo hãng, báo PIC qua `operations.alert_channel` khi kênh được chốt và yêu cầu `NV-TUNG` tắt `notify_carrier` theo B7.5. |
+| Dữ liệu cá nhân nào đã rời hệ thống mà không thu hồi được? Báo cho ai? | `after` ghi `pii_leaks = 0`. Nếu phát hiện rò rỉ trong thông báo hãng, báo PIC qua `#ops-logix-refund-alerts` và yêu cầu `NV-TUNG` tắt `notify_carrier` theo B7.5. |
 | Sự cố lộ ra trước qua số máy đo, phản hồi của người, hay đọc nội dung? Nguồn nào bàn chưa có? | Email CFO dẫn bảng chi phí PoC và phản hồi đối soát của chị Oanh. Cần đo tải theo giờ và tỷ lệ chuyển duyệt theo kho trong pilot thật. |
 
 ### Runbook 5 · Ba kịch bản "nếu … thì …" cho tuần đầu chạy thử thật
