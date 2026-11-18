@@ -20,7 +20,7 @@ rồi mới chạy đánh giá. Khối 1 không sửa code.
 
 ### Câu 1.1 · Một mục tiêu cấp hệ thống (khác "model trả lời đúng")
 
-> > Với khiếu nại hoàn tiền do giao trễ cho một đơn, hệ thống áp dụng đúng chính sách có hiệu lực, ghi số tiền và bên chịu phí nhất quán giữa sổ cái và thông báo, đồng thời chuyển ca vượt thẩm quyền cho người duyệt.
+> Với khiếu nại hoàn tiền do giao trễ cho một đơn, hệ thống áp dụng đúng chính sách có hiệu lực, ghi số tiền và bên chịu phí nhất quán giữa sổ cái và thông báo, đồng thời chuyển ca vượt thẩm quyền cho người duyệt.
 
 ### Câu 1.2 · Mục tiêu nhìn từ hai người
 
@@ -48,12 +48,12 @@ trợ lý có đang gây thiệt hại cho bên ngoài LogiX không; không có 
 
 | | Offline, cho MỘT bước (câu 1.3) | Telemetry production (câu 1.4) |
 |---|---|---|
-| **Bước / hành vi được đo** | Chọn chính sách hoàn tiền đang hiệu lực (`policy`, ứng với rủi ro `FM-06 stale_clause` trong `PRD v1.1 §4`) | |
-| **Thước đo** (một câu, có đơn vị) | Tỉ lệ (%) lần chạy mà trợ lý chọn `policy_id` khác với chính sách thực sự có hiệu lực theo ngày `as_of` | |
-| **Dữ liệu** (lấy ở đâu, bao nhiêu, ai gán nhãn) | Sự kiện `policy.policy_id` trong `runs/<mã lần chạy>/traces/`, trên 22 ticket × 5 seed (`110` lần chạy) của bộ nền; nhãn chuẩn là chính sách đúng tại ngày `as_of` do Kỹ sư cổng và Sản phẩm đối chiếu từ trường `effective_from` và `effective_to` của `policies` trong `data/world.json` | |
-| **Cách tính** (công thức, mẫu số, cách xử lý ca thiếu dữ liệu) | Số lần chạy có `policy.policy_id` khác `effective_policy(policies, as_of)["policy_id"]` chia cho tổng số lần chạy có sự kiện `policy` (nhân 100%). Lần chạy dừng hoặc chuyển người trước bước `policy` (ví dụ `pre_guard`, intent `OTHER`/`DAMAGED`/`NOT_RECEIVED`, không tìm thấy đơn, hoặc đơn đã hoàn) bị loại khỏi mẫu số và đếm riêng | |
-| **Khung thời gian / ngưỡng báo động** | (không áp dụng) | |
-| **Điểm mù** (thước đo này KHÔNG thấy gì) | Không thấy lỗi ở các bước khác (tính sai `delay_days`/`cause` ở bước trước, công thức tính tiền sai, hay ghi sai sổ cái/thông báo), và cũng không thấy nếu chính ngày `effective_from`/`effective_to` trong `data/world.json` bị nhập sai | |
+| **Bước / hành vi được đo** | Chọn chính sách hoàn tiền đang hiệu lực (`policy`, ứng với rủi ro `FM-06 stale_clause` trong `PRD v1.1 §4`) |Ghi khoản hoàn cho khách theo phiên bản chính sách mà trợ lý đã chọn ở bước policy. |
+| **Thước đo** (một câu, có đơn vị) | Tỉ lệ (%) lần chạy mà trợ lý chọn `policy_id` khác với chính sách thực sự có hiệu lực theo ngày `as_of` |Số giao dịch hoàn tự động đã ghi sổ với policy_id khác phiên bản có hiệu lực tại ngày xử lý (giao dịch/ngày). |
+| **Dữ liệu** (lấy ở đâu, bao nhiêu, ai gán nhãn) | Sự kiện `policy.policy_id` trong `runs/<mã lần chạy>/traces/`, trên 22 ticket × 5 seed (`110` lần chạy) của bộ nền; nhãn chuẩn là chính sách đúng tại ngày `as_of` do Kỹ sư cổng và Sản phẩm đối chiếu từ trường `effective_from` và `effective_to` của `policies` trong `data/world.json` |Thu toàn bộ khoản hoàn tự động ghi thành công trong ngày. Nối sổ hoàn tiền với nhật ký quyết định bằng mã giao dịch hoặc mã lần xử lý để lấy policy_id đã dùng và ngày as_of. Đối chiếu với lịch hiệu lực của các phiên bản trong danh mục chính sách do bộ phận Sản phẩm quản lý. |
+| **Cách tính** (công thức, mẫu số, cách xử lý ca thiếu dữ liệu) | Số lần chạy có `policy.policy_id` khác `effective_policy(policies, as_of)["policy_id"]` chia cho tổng số lần chạy có sự kiện `policy` (nhân 100%). Lần chạy dừng hoặc chuyển người trước bước `policy` (ví dụ `pre_guard`, intent `OTHER`/`DAMAGED`/`NOT_RECEIVED`, không tìm thấy đơn, hoặc đơn đã hoàn) bị loại khỏi mẫu số và đếm riêng |Loại bản ghi trùng theo mã giao dịch. Đếm mỗi khoản hoàn một lần nếu policy_id đã dùng khác phiên bản có hiệu lực tại as_of. Đếm riêng các giao dịch thiếu trường đối chiếu hoặc có nhiều phiên bản cùng hiệu lực để kiểm tra thủ công. |
+| **Khung thời gian / ngưỡng báo động** | (không áp dụng) |Tính theo ngày vận hành và cập nhật sau mỗi giao dịch. Báo chị Hạnh ngay khi có ít nhất 1 khoản hoàn dùng sai phiên bản để rà lại quyền lợi của khách và bên chịu phí. |
+| **Điểm mù** (thước đo này KHÔNG thấy gì) | Không thấy lỗi ở các bước khác (tính sai `delay_days`/`cause` ở bước trước, công thức tính tiền sai, hay ghi sai sổ cái/thông báo), và cũng không thấy nếu chính ngày `effective_from`/`effective_to` trong `data/world.json` bị nhập sai |Sai phiên bản là dấu hiệu rủi ro. Muốn xác nhận khách hoặc đối tác bị thiệt, cần tính lại khoản hoàn theo chính sách có hiệu lực và so với sổ cái. Chỉ số có thể bỏ sót khoản sai dù đã chọn đúng phiên bản, hoặc khi lịch hiệu lực trong danh mục bị nhập sai. |
 
 **Ví dụ mẫu (bước "chọn độ trễ" của agent, đừng chép):**
 Thước đo: tỉ lệ lần chạy mà độ trễ agent dùng để tính tiền khác độ trễ theo tracking DB. Dữ liệu: sự kiện `proposal.delay_days_used`
