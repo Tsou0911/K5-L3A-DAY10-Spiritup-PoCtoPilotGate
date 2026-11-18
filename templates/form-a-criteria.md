@@ -24,8 +24,8 @@ rồi mới chạy đánh giá. Khối 1 không sửa code.
 
 ### Câu 1.2 · Mục tiêu nhìn từ hai người
 
-- Chị Oanh, kế toán đối soát (không dùng trợ lý, nhưng phải khớp sổ với hãng và shop mỗi tuần): …
-- Chị Hạnh, trưởng ca CSKH (phải duyệt những ca trợ lý chuyển sang): …
+- Chị Oanh, kế toán đối soát có thể đối chiếu từng khoản hoàn với hãng và shop mỗi tuần dựa trên mã đơn, số tiền thực ghi, bên chịu phí và căn cứ hoàn. Nếu có chênh lệch, chị truy được giao dịch cần xử lý.
+- Chị Hạnh, trưởng ca CSKH có thể duyệt hoặc từ chối ca vượt hạn mức dựa trên số tiền đề nghị, tổng tiền đã hoàn cho khách trong ngày, chính sách áp dụng và lý do chuyển duyệt. Quyết định được ghi nhận trước khi thực hiện khoản hoàn cần phê duyệt.
 
 ---
 
