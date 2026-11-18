@@ -66,12 +66,12 @@ def pre_guard(ctx):
 
 
 def _gate_issue_refund(ctx, action):
-    """Cổng 2: chặn ghi đúp sổ cái, đối chiếu quyền lợi DB & bên chịu phí, kiểm tra phê duyệt & trần ngày."""
+    """Cổng 2: chặn ghi đúp theo ticket, khấu trừ phần đã hoàn của đơn (hỗ trợ hoàn bổ sung), đối chiếu DB & trần ngày."""
     order_id = action.get("order_id")
     ticket_id = action.get("ticket_id")
-    if ctx.tools.ledger_rows(ticket_id=ticket_id) or ctx.tools.ledger_rows(order_id=order_id):
+    if ctx.tools.ledger_rows(ticket_id=ticket_id):
         ctx.log("block_duplicate_refund", ticket_id=ticket_id, order_id=order_id)
-        return Verdict.deny("đã có khoản hoàn cho đơn hoặc ticket này trong sổ cái")
+        return Verdict.deny("đã ghi hoàn tiền cho ticket này trước đó")
 
     order = ctx.tools.lookup_order(order_id)
     pol = _effective_policy(ctx)
@@ -87,9 +87,15 @@ def _gate_issue_refund(ctx, action):
         ctx.log("block_refund_no_entitlement", db_delay=db_delay, cause=cause)
         return Verdict.deny("không đủ điều kiện hoàn tiền theo tracking DB và chính sách hiệu lực")
 
+    already_refunded = sum(r["amount_vnd"] for r in ctx.tools.ledger_rows(order_id=order_id))
+    remaining = max(0, entitlement - already_refunded)
+    if remaining <= 0:
+        ctx.log("block_duplicate_refund", ticket_id=ticket_id, order_id=order_id, already_refunded=already_refunded)
+        return Verdict.deny("đơn hàng đã được hoàn đủ quyền lợi trước đó")
+
     proposed_amount = int(action.get("amount_vnd") or 0)
     proposed_payer = action.get("payer", "LOGIX")
-    final_amount = min(proposed_amount, entitlement) if proposed_amount > 0 else entitlement
+    final_amount = min(proposed_amount, remaining) if proposed_amount > 0 else remaining
     final_payer = "LOGIX"
 
     has_valid_approval = _valid_approval(
