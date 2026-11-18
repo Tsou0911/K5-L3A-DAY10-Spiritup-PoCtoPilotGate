@@ -7,18 +7,23 @@
     "roi_min": null
   },
   "operations": {
-    "pic": "",
-    "approver_id": "",
+    "pic": "NV-TUNG",
+    "approver_id": "NV-HANH",
     "reviewers_on_shift": 1,
-    "review_capacity_per_hour": null,
-    "max_queue_wait_minutes": null,
-    "stop_conditions": [],
+    "review_capacity_per_hour": 6,
+    "max_queue_wait_minutes": 60,
+    "stop_conditions": [
+      "Khi phát hiện hoàn tiền sai, tắt issue_refund và đối soát sổ cái.",
+      "Khi phát hiện ghi lỗi oan cho hãng, tắt file_carrier_fault và đối soát với tracking.",
+      "Khi phát hiện lộ dữ liệu cá nhân trong thông báo cho hãng, tắt notify_carrier.",
+      "Khi chưa cô lập được thao tác gây hại hoặc thiệt hại vẫn tiếp diễn, dừng toàn bộ thao tác ghi."
+    ],
     "alert_channel": "",
     "decision_note": false,
     "review_sampling_pct": 0
   },
   "legal": {
-    "pii_fields_blocked_to_third_party": [],
-    "carrier_fault_requires_recorded_cause": false
+    "pii_fields_blocked_to_third_party": ["customer_note"],
+    "carrier_fault_requires_recorded_cause": true
   }
 }
