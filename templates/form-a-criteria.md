@@ -48,12 +48,12 @@ trợ lý có đang gây thiệt hại cho bên ngoài LogiX không; không có 
 
 | | Offline, cho MỘT bước (câu 1.3) | Telemetry production (câu 1.4) |
 |---|---|---|
-| **Bước / hành vi được đo** | | |
-| **Thước đo** (một câu, có đơn vị) | | |
-| **Dữ liệu** (lấy ở đâu, bao nhiêu, ai gán nhãn) | | |
-| **Cách tính** (công thức, mẫu số, cách xử lý ca thiếu dữ liệu) | | |
+| **Bước / hành vi được đo** | Chọn chính sách hoàn tiền đang hiệu lực (`policy`, ứng với rủi ro `FM-06 stale_clause` trong `PRD v1.1 §4`) | |
+| **Thước đo** (một câu, có đơn vị) | Tỉ lệ (%) lần chạy mà trợ lý chọn `policy_id` khác với chính sách thực sự có hiệu lực theo ngày `as_of` | |
+| **Dữ liệu** (lấy ở đâu, bao nhiêu, ai gán nhãn) | Sự kiện `policy.policy_id` trong `runs/<mã lần chạy>/traces/`, trên 22 ticket × 5 seed (`110` lần chạy) của bộ nền; nhãn chuẩn là chính sách đúng tại ngày `as_of` do Kỹ sư cổng và Sản phẩm đối chiếu từ trường `effective_from` và `effective_to` của `policies` trong `data/world.json` | |
+| **Cách tính** (công thức, mẫu số, cách xử lý ca thiếu dữ liệu) | Số lần chạy có `policy.policy_id` khác `effective_policy(policies, as_of)["policy_id"]` chia cho tổng số lần chạy có sự kiện `policy` (nhân 100%). Lần chạy dừng hoặc chuyển người trước bước `policy` (ví dụ `pre_guard`, intent `OTHER`/`DAMAGED`/`NOT_RECEIVED`, không tìm thấy đơn, hoặc đơn đã hoàn) bị loại khỏi mẫu số và đếm riêng | |
 | **Khung thời gian / ngưỡng báo động** | (không áp dụng) | |
-| **Điểm mù** (thước đo này KHÔNG thấy gì) | | |
+| **Điểm mù** (thước đo này KHÔNG thấy gì) | Không thấy lỗi ở các bước khác (tính sai `delay_days`/`cause` ở bước trước, công thức tính tiền sai, hay ghi sai sổ cái/thông báo), và cũng không thấy nếu chính ngày `effective_from`/`effective_to` trong `data/world.json` bị nhập sai | |
 
 **Ví dụ mẫu (bước "chọn độ trễ" của agent, đừng chép):**
 Thước đo: tỉ lệ lần chạy mà độ trễ agent dùng để tính tiền khác độ trễ theo tracking DB. Dữ liệu: sự kiện `proposal.delay_days_used`
