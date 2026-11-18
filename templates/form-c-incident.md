@@ -1,6 +1,6 @@
 # Phiếu C · Sự cố và quyết định v2 · Khối 3 (phút 125–200)
 
-**Bàn:** ______ · **Thẻ đã bốc:** ___ *(để trống tới phút 125; bốc số xong thì ghi đúng số đó, ví dụ `S3`. Lab Coach đối chiếu với sổ; lệnh tự kiểm tra in dòng này trong report.)*
+**Bàn:** Spiritup · **Thẻ đã bốc:** S5
 
 Mở `incidents/Sx/card.md` của đúng số đã bốc. Các bước trên thẻ trỏ về đúng mục trong phiếu này. Mục C3 chỉ điền phần ứng với
 số thẻ của bàn; các phần khác để trống.
@@ -47,19 +47,19 @@ Chạy **trước khi sửa bất cứ thứ gì**:
 python3 -m lab10.grade --incident Sx
 ```
 
-- Mã lần chạy grade: `__________` · base: `__________` · prepared: `__________`
-- Cổng vòng 1 đỡ được ô / con số nào (so cột base với cột prepared): …
-- Khối kinh doanh và vận hành còn dòng nào vượt trần: …
+- Mã lần chạy grade: chờ báo cáo · base: `R-S5-before-20261118-215351-6f84ae` · prepared: chờ bản chốt vòng 1.
+- Cổng vòng 1 đỡ được ô / con số nào (so cột base với cột prepared): chờ `prepared`. Baseline ghi 12 ca chuyển duyệt/ngày giả lập và 0 ca ùn.
+- Khối kinh doanh và vận hành còn dòng nào vượt trần: baseline ghi HCM-B2B 11.326đ/ticket so với 10.000đ làm tay và chi phí LLM cao nhất 2.412đ so với trần 1.500đ. Chờ `prepared` để đối chiếu.
 
 **Mở lại pre-mortem (Phiếu B mục B6), viết bằng bút khác màu.** Với thẻ S1, S3, S4, S5 đây là một phần của phần riêng theo thẻ.
 
-- Sự cố trên thẻ thuộc lăng kính nào (kỹ thuật, kinh doanh, con người và vận hành, pháp lý)? …
-- Có nằm trong các lý do bàn đã viết không? Nếu có: cổng vòng 1 đã đỡ được bao nhiêu (đọc cột prepared trong report)? Nếu không: vì sao cả bàn không nghĩ tới? …
+- Sự cố trên thẻ thuộc lăng kính nào (kỹ thuật, kinh doanh, con người và vận hành, pháp lý)? Kinh doanh, con người và vận hành. Một ca chuyển duyệt sau khi chạy trợ lý phát sinh cả chi phí máy và công duyệt.
+- Có nằm trong các lý do bàn đã viết không? B6 nêu rủi ro ghi đúp ở lăng kính kỹ thuật. Chi phí kép ở kho sỉ là lý do bổ sung ở lăng kính vận hành. Chờ `prepared` để đo mức giảm.
 - Lý do còn thiếu, thêm bây giờ:
 
 | Lý do thất bại (viết ở thì quá khứ) | Lăng kính | Kiểm được bằng gì (trace / data / config nào) |
 |---|---|---|
-| | | |
+| Trợ lý đã tốn tiền máy để tính khoản vượt hạn mức rồi mới chuyển người, khiến ca đó phát sinh thêm công duyệt. | Con người và vận hành | `S5-51@11` chuyển duyệt sau `proposal`, chi phí máy 565đ. Đối chiếu chi phí HCM-B2B trong report baseline. |
 
 ---
 
@@ -220,8 +220,8 @@ Mở lại Phiếu B mục B3. Ghi ở đây những dòng đổi so với vòng
 
 | Trường / bảng | Vòng 1 bàn đã coi là (nguồn sự thật / bản sao / chưa hỏi) | Sau khi đọc thẻ thì thấy | Ảnh hưởng tới tiền hay lỗi hãng thế nào |
 |---|---|---|---|
-| | | | |
-| | | | |
+| `orders.refund_status` và `ledger_seed` | B3 coi `refund_status` là cờ cập nhật theo batch đêm và liệt kê sổ cái trong dữ liệu đọc. | Dùng giao dịch thực tế theo đơn để đối chiếu khoản đã hoàn. `ledger_seed` là ảnh chụp sổ cái trước lần mô phỏng. | `S5-02@11` ghi thêm 25.000đ dù nhãn yêu cầu hoàn 0đ. Cần đối chiếu số tiền còn được hoàn trước khi duyệt. |
+| `orders.warehouse_id` và `ops_facts` | B3 liệt kê dữ liệu chi phí, chưa tách công duyệt theo kho. | Ghép `warehouse_id` với bảng kho để theo dõi chi phí theo phân khúc. | Trung bình toàn pilot 6.083đ/ticket che khuất HCM-B2B tốn 11.326đ/ticket so với 10.000đ làm tay. |
 
 ---
 
@@ -255,9 +255,9 @@ Kiểm bằng gì (hàm trong `guards.py`, dòng report nào): …
 
 ### Câu 3.3 · Một giả định về môi trường mà người thiết kế đã ngầm tin, nhưng nhiều khả năng sai ngoài thực tế
 
-Giả định (thứ nằm NGOÀI phần mềm): …
+Giả định (thứ nằm NGOÀI phần mềm): Tỷ lệ và nhịp đến của ca cần duyệt ở kho sỉ tương đương các kho khác, nên một người trực có thể hấp thụ tải.
 
-Vì sao có thể sai: …
+Vì sao có thể sai: Đơn kho sỉ có thể thường xuyên vượt hạn mức và đến dồn theo giờ. Baseline cho thấy chi phí kho sỉ vượt làm tay dù mô phỏng chưa ùn. Cần đo lượng đến theo giờ và tỷ lệ chuyển duyệt theo kho.
 
 ---
 
@@ -319,6 +319,8 @@ python3 -m lab10.grade --incident Sx
 | [2] | | | | | |
 | [3] | | | | | |
 
+Đề xuất vận hành để ghép với nhánh tương ứng ở C6: giữ ca nghi hoàn trùng để `NV-HANH` kiểm tra khoản còn được hoàn và `NV-OANH` đối soát sổ cái. Nếu xác nhận hoàn sai, báo `NV-TUNG` tắt `issue_refund` theo B7.5. Quy trình giúp giảm rủi ro và giới hạn thiệt hại. Chờ mã `after` để kiểm chứng hiệu quả và cập nhật C9.
+
 ---
 
 <a id="c8"></a>
@@ -369,7 +371,7 @@ Vẽ lại cây ở C6. Ở mỗi nhánh đã xử lý, thêm một nút `VÀ [g
 
 | Rủi ro | Khả năng | Tác động | Người phụ trách (PIC, một người) | Dấu hiệu (metric nào, ngưỡng nào) | Xử lý | Ảnh hưởng bước đánh giá | Nhóm chức năng (GOVERN / MAP / MEASURE / MANAGE) |
 |---|---|---|---|---|---|---|---|
-| | | | | | | | |
+| Chi phí máy cộng công duyệt làm kho sỉ đắt hơn xử lý tay | Đã thấy ở baseline S5. Tần suất pilot thật chưa đo. | Lỗ theo phân khúc, có thể thêm tải duyệt. | Lê Hữu Toàn (PIC đề xuất theo B5) | Chi phí HCM-B2B > 10.000đ/ticket so với làm tay. Baseline ghi 11.326đ. | Báo đầu mối kinh doanh xem lại phạm vi, đo lại chi phí, ROI và độ phủ. | Chưa đề xuất mở rộng ở kho này khi số đo vẫn vượt làm tay. | MANAGE |
 
 Quy tắc: **mỗi dòng phải đổi được một quyết định.** Cột "Dấu hiệu" phải là một metric có trong `monitors.py` hoặc trong report.
 
@@ -385,26 +387,27 @@ Ghi các dòng đổi sau sự cố. Mỗi dòng vẫn phải có một PIC có 
 
 | # nhóm | Trạng thái mới (Xong / Chưa / Không áp dụng) | Bằng chứng mới (mã lần chạy, mục phiếu, số trong report) | PIC |
 |---|---|---|---|
-| | | | |
-| | | | |
+| 6 · Chi phí | Chưa | `R-S5-before-20261118-215351-6f84ae`: HCM-B2B 11.326đ/ticket, LLM cao nhất 2.412đ, ROI -0,33. Chờ báo cáo sau sửa. | Nguyễn Đức Trọng (đề xuất theo B5) |
+| 7 · Vận hành | Chưa | Baseline ghi 12 ca chuyển duyệt/ngày và 0 ca ùn. Chờ đối chiếu `prepared` và `after`. | Lê Hữu Toàn (đề xuất theo B5) |
+| 8 · Con người, pháp lý | Chưa | Baseline ghi 20 lỗi hãng oan qua 150 lượt thử, 0 lần lộ PII. Chờ đối soát và kết quả sau sửa. | Lê Hữu Toàn (đề xuất theo B5) |
 
 ### Runbook 4 · Sau sự cố trên thẻ (vòng 2)
 
 | Câu hỏi | Trả lời |
 |---|---|
-| Tín hiệu nào ở Runbook 2 (Phiếu B mục B7.5) lẽ ra phải báo trước sự cố này? Nó đã có chưa? | |
-| Bàn thêm hoặc đổi ngưỡng nào, từ bao nhiêu thành bao nhiêu? | |
-| Bàn đổi gì về **người** (số người trực, ai đứng tên, ai được gọi)? | |
-| Bàn đổi gì về **phạm vi** hoặc **quy trình** (kiểm mẫu, ghi chú giải thích, trần)? | |
-| Nói gì với bên thứ ba bị ảnh hưởng (hãng, shop, người nhận, nhân viên duyệt), ai nói, trong bao lâu? | |
-| Dữ liệu cá nhân nào đã rời hệ thống mà không thu hồi được? Báo cho ai? | |
-| Sự cố lộ ra trước qua số máy đo, phản hồi của người, hay đọc nội dung? Nguồn nào bàn chưa có? | |
+| Tín hiệu nào ở Runbook 2 (Phiếu B mục B7.5) lẽ ra phải báo trước sự cố này? Nó đã có chưa? | B7.5 theo dõi chi phí trung bình và tiền hoàn sai. S5 cho thấy cần đọc thêm chi phí theo kho và ticket tốn tiền LLM nhất. |
+| Bàn thêm hoặc đổi ngưỡng nào, từ bao nhiêu thành bao nhiêu? | Dùng ngưỡng B7.5: chi phí chung vượt 9.000đ/ticket thì báo đầu mối kinh doanh, quá 60 phút chờ hoặc có ca ùn thì báo trưởng ca và PIC, có hoàn sai thì dừng tự động hoàn. So chi phí từng kho với 10.000đ làm tay và tiền LLM với trần 1.500đ trong `ops_limits`. |
+| Bàn đổi gì về **người** (số người trực, ai đứng tên, ai được gọi)? | Cấu hình hiện tại có 1 người, 6 ca/giờ, `NV-HANH` duyệt vượt hạn mức và `NV-TUNG` giữ công tắc theo B7.5. Baseline có 0 ca ùn. Cần số liệu theo giờ trước khi quyết định tăng người. |
+| Bàn đổi gì về **phạm vi** hoặc **quy trình** (kiểm mẫu, ghi chú giải thích, trần)? | Đề xuất đối chiếu sổ cái khi nghi hoàn trùng theo C7. Đầu mối kinh doanh quyết định phạm vi và trần theo B7.5–B7.6. |
+| Nói gì với bên thứ ba bị ảnh hưởng (hãng, shop, người nhận, nhân viên duyệt), ai nói, trong bao lâu? | `NV-TUNG` điều phối việc dừng, `NV-HANH` phân công xử lý tay và `NV-OANH` đối soát giao dịch đã xác minh với hãng, shop. B7.5 chưa chỉ định người tiếp nhận khiếu nại hay hạn báo đối tác. Hạn phản hồi CFO trên thẻ S5 là trước 17h. |
+| Dữ liệu cá nhân nào đã rời hệ thống mà không thu hồi được? Báo cho ai? | Baseline S5 ghi `pii_leaks = 0`. Nếu phát hiện rò rỉ trong thông báo hãng, báo PIC qua `operations.alert_channel` khi kênh được chốt và yêu cầu `NV-TUNG` tắt `notify_carrier` theo B7.5. |
+| Sự cố lộ ra trước qua số máy đo, phản hồi của người, hay đọc nội dung? Nguồn nào bàn chưa có? | Email CFO dẫn bảng chi phí PoC và phản hồi đối soát của chị Oanh. Cần đo tải theo giờ và tỷ lệ chuyển duyệt theo kho trong pilot thật. |
 
 ### Runbook 5 · Ba kịch bản "nếu … thì …" cho tuần đầu chạy thử thật
 
-1. Nếu số ticket tăng gấp ___ lần trong một giờ thì: …
-2. Nếu nhà cung cấp LLM lỗi quá ___ phút thì: …
-3. Nếu người duyệt báo không tin một quyết định của trợ lý thì: …
+1. Nếu số ticket tăng gấp **3 lần** trong một giờ, trưởng ca so lượng chuyển duyệt với công suất 6 ca/giờ và gọi hỗ trợ nếu dự báo vượt SLA 60 phút. Khi đã vượt SLA hoặc có ca ùn, PIC điều phối xử lý tay và phối hợp kinh doanh xem xét thu hẹp theo B7.6.
+2. Nếu LLM lỗi và phát sinh tín hiệu đỏ theo B7.5, báo PIC, `NV-TUNG` tắt thao tác gây hại hoặc dừng toàn bộ thao tác ghi nếu chưa cô lập được, rồi trưởng ca phân công xử lý tay. Phiếu B chưa quy định số phút lỗi LLM để kích hoạt chuyển toàn bộ.
+3. Nếu người duyệt báo không tin một quyết định, giữ ca để `NV-HANH` đối chiếu tracking, chính sách và sổ cái. Khi nghi hoàn trùng, chuyển `NV-OANH` đối soát. Nếu phát hiện hoàn sai, báo `NV-TUNG` dừng `issue_refund` theo B7.5.
 
 ---
 
