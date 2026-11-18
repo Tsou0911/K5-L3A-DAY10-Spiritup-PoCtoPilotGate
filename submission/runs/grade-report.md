@@ -2,10 +2,10 @@
 
 *Đây là kết quả TỰ KIỂM TRA của bàn, không phải điểm. Bài được một team chấm tự động chấm lại sau buổi học.*
 
-- Mã lần chạy: `R-S5-grade-20261118-232040-fa276c` · bàn: `Spiritup` · grader `lab10-1.0` · 2.005s
-- Ba mốc: base `R-S5-before-20261118-232042-fa276c` · prepared `R-S5-prepared-20261118-232042-fa276c` · after `R-S5-after-20261118-232042-fa276c` (report + trace trong runs/)
+- Mã lần chạy: `R-S5-grade-20261118-235351-2fd8ef` · bàn: `Spiritup` · grader `lab10-1.0` · 1.597s
+- Ba mốc: base `R-S5-before-20261118-235352-2fd8ef` · prepared `R-S5-prepared-20261118-235352-2fd8ef` · after `R-S5-after-20261118-235352-2fd8ef` (report + trace trong runs/)
 - Mốc prepared (cổng vòng 1): đã chốt `fd9e7ea0`, còn nguyên
-- Hash code đội (guards + monitors + switches + cổng vận hành): `fa276cf8e59b`
+- Hash code đội (guards + monitors + switches + cổng vận hành): `2fd8efbf157f`
 - Hash Bản tiêu chí chấp nhận: `6d9fc42f6285` · đã ký: `6d9fc42f6285` · KHÔNG ĐỔI
 - Thẻ đang kiểm: `S5` · dòng "Thẻ đã bốc" bàn ghi trong phiếu: S5 · khớp
 
@@ -13,29 +13,29 @@
 |---|---|---|
 | 1 integrity | ❌ | file khoá bị đổi: ['data/tickets.jsonl', 'data/world.json', 'incidents/S1/card.json', 'incidents/S1/card.md', 'incidents/S1/tickets.jsonl', 'incidents/S1/world_patch.json', 'incidents/S2/card.json', 'incidents/S2/card.md', 'incidents/S2/tickets.jsonl', 'incidents/S2/world_patch.json', 'incidents/S3/card.json', 'incidents/S3/card.md', 'incidents/S3/tickets.jsonl', 'incidents/S3/world_patch.json', 'incidents/S4/card.json', 'incidents/S4/card.md', 'incidents/S4/tickets.jsonl', 'incidents/S4/world_patch.json', 'incidents/S5/card.json', 'incidents/S5/card.md', 'incidents/S5/tickets.jsonl', 'incidents/S5/world_patch.json', 'incidents/S6/card.json', 'incidents/S6/card.md', 'incidents/S6/tickets.jsonl', 'incidents/S6/world_patch.json', 'incidents/S7/card.json', 'incidents/S7/card.md', 'incidents/S7/tickets.jsonl', 'incidents/S7/world_patch.json', 'incidents/S8/card.json', 'incidents/S8/card.md', 'incidents/S8/tickets.jsonl', 'incidents/S8/world_patch.json', 'lab10/__init__.py', 'lab10/_gradectx.py', 'lab10/_noop_guards.py', 'lab10/agent.py', 'lab10/check_submission.py', 'lab10/checkpoint.py', 'lab10/criteria.py', 'lab10/eval.py', 'lab10/gate.py', 'lab10/grade.py', 'lab10/helpers.py', 'lab10/mock_llm.py', 'lab10/ops.py', 'lab10/tools.py', 'lab10/trace.py', 'lab10/world.py', 'tests/test_public.py'] |
 | 2 criteria | ✅ | đã ký, còn nguyên |
-| 3 visible | ❌ | base có vấn đề: True; after sạch: False; ticket còn hỏng: không; trần còn vượt: ['kho HCM-B2B: mỗi ticket tốn 10382đ > làm tay 10000đ'] |
+| 3 visible | ✅ | base có vấn đề: True; after sạch: True; ticket còn hỏng: không; trần còn vượt: không |
 | 4 hidden | — | máy này không có bài kiểm tra ẩn (team chấm sẽ chạy sau buổi học) |
 | 5 regression | ✅ | bộ nền pass_rate 0.9909 → 1.0; ca mới hỏng: không |
-| 6 monitor | ✅ | metric mới: ['max_warehouse_cost_per_ticket_vnd', 'duplicate_or_llm_budget_guard_rate']; sáng đèn: [('max_warehouse_cost_per_ticket_vnd', 'before', 4586.4, 11325.666667), ('max_warehouse_cost_per_ticket_vnd', 'after', 4586.4, 10382.25), ('duplicate_or_llm_budget_guard_rate', 'after', 0.0, 0.433333)] |
+| 6 monitor | ✅ | metric mới: ['max_warehouse_cost_per_ticket_vnd', 'duplicate_or_llm_budget_guard_rate']; sáng đèn: [('max_warehouse_cost_per_ticket_vnd', 'before', 4586.4, 11325.666667), ('max_warehouse_cost_per_ticket_vnd', 'after', 4586.4, 4214.25), ('duplicate_or_llm_budget_guard_rate', 'after', 0.0, 0.388889)] |
 
 **Kinh doanh · vận hành · pháp lý trên gói sự cố bàn nhìn thấy** (tiền tính cho một ngày giả lập)
 
 | Chỉ số | base | prepared | after |
 |---|---|---|---|
-| tỉ lệ chuyển người duyệt | 0.4 | 0.5 | 0.5 |
+| tỉ lệ chuyển người duyệt | 0.4 | 0.5 | 0.1667 |
 | thời gian chờ trung bình (phút) | 0.0 | 0.0 | 0.0 |
 | thời gian chờ lâu nhất (phút) | 0.0 | 0.0 | 0.0 |
 | số ca bị ùn | 0 | 0 | 0 |
 | số người trực · ca duyệt được mỗi giờ | 1 · 6 | 1 · 6 | 1 · 6 |
 | nhân viên kiểm lại quyết định tự động (%) | 0 | 0 | 0 |
-| chi phí mỗi ticket (đ) · làm tay | 6083 · 10000 | 6488 · 10000 | 6491 · 10000 |
+| chi phí mỗi ticket (đ) · làm tay | 6083 · 10000 | 6488 · 10000 | 3897 · 10000 |
 | tiền LLM ticket đắt nhất (đ) · trần | 2412 · 1500 | 664 · 1500 | 665 · 1500 |
-| tiết kiệm ròng mỗi ngày (đ) | -60486 | 105370 | 105270 |
-| ROI | -0.33 | 0.54 | 0.54 |
+| tiết kiệm ròng mỗi ngày (đ) | -60486 | 105370 | 109857 |
+| ROI | -0.33 | 0.54 | 1.57 |
 | tổng hoàn tự động một ngày (đ) · ngân sách | 196000 · 2000000 | 98000 · 2000000 | 98000 · 2000000 |
 | tiền hoàn sai ngày tệ nhất (đ) · ngân sách | 178000 · 2000000 | 0 · 2000000 | 0 · 2000000 |
-| độ phủ pilot (phần ticket trợ lý xử lý) | 1.0 | 1.0 | 1.0 |
-| số kho đắt hơn làm tay | 1 | 1 | 1 |
+| độ phủ pilot (phần ticket trợ lý xử lý) | 1.0 | 1.0 | 0.6 |
+| số kho đắt hơn làm tay | 1 | 1 | 0 |
 | pháp lý: lần lộ dữ liệu cá nhân cho bên thứ ba | 0 | 0 | 0 |
 | pháp lý: lỗi ghi oan cho hãng (bên thứ ba) | 20 | 0 | 0 |
 
@@ -46,7 +46,7 @@
 | kho CT | pass 0.6667; hoàn sai 50000; oan 0; PII 0; chi phí 664đ | pass 0.6667; hoàn sai 0; oan 0; PII 0; chi phí 630đ | pass 1.0; hoàn sai 0; oan 0; PII 0; chi phí 664đ |
 | kho DN | pass 0.8; hoàn sai 490000; oan 5; PII 0; chi phí 663đ | pass 1.0; hoàn sai 0; oan 0; PII 0; chi phí 643đ | pass 1.0; hoàn sai 0; oan 0; PII 0; chi phí 643đ |
 | kho HCM | pass 0.5; hoàn sai 100000; oan 5; PII 0; chi phí 662đ | pass 1.0; hoàn sai 0; oan 0; PII 0; chi phí 612đ | pass 1.0; hoàn sai 0; oan 0; PII 0; chi phí 612đ |
-| kho HCM-B2B | pass 1.0; hoàn sai 0; oan 0; PII 0; chi phí 11326đ > làm tay | pass 1.0; hoàn sai 0; oan 0; PII 0; chi phí 10382đ > làm tay | pass 1.0; hoàn sai 0; oan 0; PII 0; chi phí 10382đ > làm tay |
+| kho HCM-B2B | pass 1.0; hoàn sai 0; oan 0; PII 0; chi phí 11326đ > làm tay | pass 1.0; hoàn sai 0; oan 0; PII 0; chi phí 10382đ > làm tay | — |
 | kho HN | pass 0.75; hoàn sai 250000; oan 10; PII 0; chi phí 1244đ | pass 1.0; hoàn sai 0; oan 0; PII 0; chi phí 4214đ | pass 1.0; hoàn sai 0; oan 0; PII 0; chi phí 4214đ |
 | hãng DNB | pass 1.0; hoàn sai 0; oan 0; PII 0 | pass 1.0; hoàn sai 0; oan 0; PII 0 | pass 1.0; hoàn sai 0; oan 0; PII 0 |
 | hãng GHSH | pass 0.8; hoàn sai 250000; oan 10; PII 0 | pass 1.0; hoàn sai 0; oan 0; PII 0 | pass 1.0; hoàn sai 0; oan 0; PII 0 |
@@ -93,9 +93,9 @@
 
 **Trần và ngưỡng ở mốc after (nền của quyết định Gate 1 v2)**
 
-- VƯỢT TRẦN: kho HCM-B2B: mỗi ticket tốn 10382đ > làm tay 10000đ (trên visible)
+- Không vượt trần kinh doanh / vận hành nào.
 - Mọi ngưỡng đã ký đều đạt.
-- KHÔNG đủ căn cứ để chọn 'Tiếp tục'. Thu hẹp, Cải tiến thêm hoặc Dừng, kèm lý do và con số, vẫn là quyết định đạt.
+- Được phép cân nhắc 'Tiếp tục'.
 
 | Bộ | Chỉ số | base | prepared | after | Chênh after − base |
 |---|---|---|---|---|---|
@@ -114,4 +114,4 @@
 | visible | wrongful_carrier_faults | 20 | 0 | 0 | -20 |
 | visible | merchant_debit_vnd | 0 | 0 | 0 | +0 |
 | visible | pii_leaks | 0 | 0 | 0 | +0 |
-| visible | escalation_rate | 0.4 | 0.5 | 0.5 | +0.1 |
+| visible | escalation_rate | 0.4 | 0.5 | 0.1667 | -0.2333 |

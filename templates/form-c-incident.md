@@ -32,8 +32,8 @@ Mỗi lệnh `lab10.eval` và `lab10.grade` tự ghi một dòng vào `runs/jour
 |---|---|---|---|---|---|---|---|---|
 | 1 | `R-S5-prepared-20261118-230425-fa276c` | S5 · prepared | nhận thẻ đã bốc, chưa sửa thêm (đúng cổng vòng 1 đã chốt) | 0.9667 ([0.9, 1.0]) | 0.9667 | 0đ · 0 · 0 | 0.5 | Cổng vòng 1 chặn sạch hoàn trùng & LLM > 1.500đ (ROI +0,54), nhưng chặn oan đơn hoàn một phần `S5-21` và còn vượt trần `HCM-B2B` (10.382đ > 10.000đ). |
 | 2 | `R-S5-after-20261118-230403-fa276c` | S5 · after | khấu trừ phần đã hoàn theo sổ cái cho đơn hoàn một phần (`S5-21`) và thêm 2 monitor trong `monitors.py` | 1.0 ([1.0, 1.0]) | 1.0 | 0đ · 0 · 0 | 0.5 | Đạt 150/150 (`under_refund_vnd = 0`) và 2 monitor mới đều sáng đèn; chỉ còn vượt trần `kho HCM-B2B: 10382đ > 10000đ` chờ vai Kinh doanh chốt `pilot_scope`. |
-| 3 | | S5 · after | | | | | | |
-| 4 | `R-base-after-20261118-230406-fa276c` | base · after | (kiểm không regression) | 1.0 ([1.0, 1.0]) | 1.0 | 0đ · 0 · 0 | 0.2273 | Không làm hỏng bất kỳ ca nào trên bộ nền (110/110 đạt, `vượt trần: không`). |
+| 3 | `R-S5-after-20261118-235344-2fd8ef` | S5 · after | loại kho sỉ `HCM-B2B` khỏi `business.pilot_scope` trong `operating_gates.json` (giữ `CT`, `DN`, `HCM`, `HN`) | 1.0 ([1.0, 1.0]) | 1.0 | 0đ · 0 · 0 | 0.1667 | Hết vượt trần hoàn toàn (`cost 3.897đ/ticket`, `ROI 1,57`, độ phủ `0,6`, `số kho đắt hơn làm tay = 0`, `3 visible ✅`). |
+| 4 | `R-base-after-20261118-235347-2fd8ef` | base · after | (kiểm không regression sau khi chỉnh `pilot_scope`) | 1.0 ([1.0, 1.0]) | 1.0 | 0đ · 0 · 0 | 0.2273 | Không làm hỏng bất kỳ ca nào trên bộ nền (`110/110` đạt, `vượt trần: không`, `5 regression ✅`). |
 
 ---
 
@@ -60,6 +60,7 @@ python3 -m lab10.grade --incident Sx
 | Lý do thất bại (viết ở thì quá khứ) | Lăng kính | Kiểm được bằng gì (trace / data / config nào) |
 |---|---|---|
 | *(Kỹ sư cổng)* Cổng chống hoàn trùng vòng 1 kiểm tra nhị phân theo `order_id` thay vì trừ số tiền đã hoàn trong sổ cái, làm từ chối oan khoản hoàn bổ sung (`S5-21`); và chưa tách chi phí máy + công người theo từng kho để phát hiện sớm kho tự động hoá bị lỗ. | Kỹ thuật | Trace `S5-21` (`block_duplicate_refund` vs `ledger_seed`), `by_segment.warehouse` trong `report.json` và monitor `max_warehouse_cost_per_ticket_vnd`. |
+| *(Sản phẩm và kinh doanh)* Đánh giá hiệu quả AI bằng chi phí trung bình toàn hệ thống (`6.083đ/ticket`) mà chưa nhận diện phân khúc kho sỉ `HCM-B2B` có unit economics âm (`11.326đ/ticket` ở base / `10.382đ` ở prepared > `10.000đ` làm tay) do 100% ca đều chuyển duyệt. | Kinh doanh | Report `by_segment.warehouse`, trường `warehouse`, `review_kind`, `cost_vnd` và monitor `max_warehouse_cost_per_ticket_vnd`. |
 
 ---
 
@@ -249,9 +250,9 @@ Bắt buộc: ít nhất ba dòng, trong đó **một dòng là nhánh bàn chư
 
 ### Câu 3.2 · Một specification mà nếu bị vi phạm thì gây ra tác hại trên thẻ
 
-Kiểm được bằng code hoặc bằng một con số trong report: …
+Kiểm được bằng code hoặc bằng một con số trong report: Mọi lệnh `issue_refund` phải đối chiếu tổng số tiền đã hoàn của đơn theo `order_id` trong sổ cái trước khi ghi (không hoàn vượt quyền lợi còn lại); chi phí LLM cho mỗi ticket không vượt `1.500đ`; và chi phí trung bình mỗi ticket tại từng kho đang chạy pilot không được vượt quá `10.000đ` của xử lý tay.
 
-Kiểm bằng gì (hàm trong `guards.py`, dòng report nào): …
+Kiểm bằng gì (hàm trong `guards.py`, dòng report nào): Hàm `_gate_issue_refund` trong `lab10/guards.py` (tính `already_refunded = sum(ledger_rows(order_id))`); `business.cost_budget_per_ticket_vnd = 1500` và `business.pilot_scope` (`["CT", "DN", "HCM", "HN"]`) trong `config/operating_gates.json`; kiểm trên report qua `wrongful_refund_vnd`, `under_refund_vnd`, `tiền LLM ticket đắt nhất`, `by_segment.warehouse` (`số kho đắt hơn làm tay = 0`), và monitor `max_warehouse_cost_per_ticket_vnd` trong `lab10/monitors.py`.
 
 ### Câu 3.3 · Một giả định về môi trường mà người thiết kế đã ngầm tin, nhưng nhiều khả năng sai ngoài thực tế
 
@@ -317,9 +318,9 @@ python3 -m lab10.grade --incident Sx
 |---|---|---|---|---|---|
 | [1] | Cờ `refund_status` chậm & cổng vòng 1 chặn nhị phân theo `order_id` làm hỏng ca hoàn bổ sung (`S5-21`) | `lab10/guards.py`: `_gate_issue_refund` tính `already_refunded = sum(ledger_rows(order_id))`, `remaining = max(0, entitlement - already_refunded)`; chặn nếu `<= 0` và kéo về `remaining` nếu `> 0` | Chặn (trước lệnh ghi sổ cái) + Phát hiện (`duplicate_or_llm_budget_guard_rate` trong `monitors.py`) | **NGĂN hẳn** cả hoàn trùng (`S5-02`, `S5-03`, `S5-05`, `S5-20`) lẫn thiếu tiền đơn hoàn một phần (`S5-21`), vì luôn đối chiếu trực tiếp sổ cái `ledger_rows` trước khi ghi. | `R-S5-after-20261118-230403-fa276c` (`pass_rate 1.0`, `wrongful 0đ`, `under_refund 0đ`) |
 | [2] | Ticket dán danh sách quá dài khiến tiền LLM vượt trần `1.500đ` (`S5-50`, `S5-70`) | `config/operating_gates.json`: `business.cost_budget_per_ticket_vnd = 1500` (đã chốt vòng 1) + `lab10/monitors.py`: `duplicate_or_llm_budget_guard_rate` | Chặn / Giới hạn thiệt hại + Phát hiện | **NGĂN hẳn** tiền LLM vượt `1.500đ` trên từng ticket vì `over_budget` ngắt trước khi gọi `llm.extract` (`llm_cost_max = 665đ`). | `R-S5-after-20261118-230403-fa276c` (`llm_cost_max = 665đ ≤ 1.500đ`) |
-| [3] | Kho sỉ `HCM-B2B` chuyển duyệt 100% làm chi phí `10.382đ > 10.000đ` làm tay | *(Chờ Sản phẩm & kinh doanh chỉnh `config/operating_gates.json`: `business.pilot_scope` loại `HCM-B2B`, chỉ giữ `["CT", "DN", "HCM", "HN"]`)* + `lab10/monitors.py`: `max_warehouse_cost_per_ticket_vnd` (đã thêm để phát hiện) | Phát hiện (Kỹ sư cổng đã xong) · Vận hành / Kinh doanh (`pilot_scope`, chờ vai Kinh doanh chỉnh) | Cổng `pilot_scope` sẽ **NGĂN hẳn** lãng phí phí máy cho phân khúc không thể tự động hoá; hiện tại đã có monitor `max_warehouse_cost_per_ticket_vnd` phát hiện (`10.382đ`). | `R-S5-after-20261118-230403-fa276c` (còn vượt trần `HCM-B2B` chờ chỉnh `pilot_scope`) |
+| [3] | Kho sỉ `HCM-B2B` chuyển duyệt 100% làm chi phí `10.382đ > 10.000đ` làm tay | `config/operating_gates.json`: `business.pilot_scope` chuyển sang `{"mode": "warehouse", "warehouses": ["CT", "DN", "HCM", "HN"], "percent": 100}` (tạm đưa `HCM-B2B` về làm tay) + `lab10/monitors.py`: `max_warehouse_cost_per_ticket_vnd` | Vận hành / Giới hạn thiệt hại (`pilot_scope`) + Phát hiện (`monitors.py`) | **NGĂN hẳn** lãng phí phí máy cho phân khúc có unit economics âm (`HCM-B2B` ra ngoài phạm vi, `số kho đắt hơn làm tay = 0`, `ROI` tăng từ `0,54` lên `1,57`). | `R-S5-after-20261118-235344-2fd8ef` (`3.897đ/ticket`, `ROI 1,57`, `3 visible ✅`) |
 
-Đề xuất vận hành để ghép với nhánh tương ứng ở C6: giữ ca nghi hoàn trùng để `NV-HANH` kiểm tra khoản còn được hoàn và `NV-OANH` đối soát sổ cái. Nếu xác nhận hoàn sai, báo `NV-TUNG` tắt `issue_refund` theo B7.5. Quy trình giới hạn thiệt hại sau phát hiện. Trace `S5-21@11` ở `R-S5-after-20261118-230217-dd9811` cho thấy cổng ghi chặn cả khoản 12.000đ hợp lệ khi đơn đã có giao dịch. Khi đối soát cần phân biệt hoàn trùng với phần quyền lợi còn lại.
+Đề xuất vận hành để ghép với nhánh tương ứng ở C6: giữ ca nghi hoàn trùng để `NV-HANH` kiểm tra khoản còn được hoàn và `NV-OANH` đối soát sổ cái. Nếu xác nhận hoàn sai, báo `NV-TUNG` tắt `issue_refund` theo B7.5. Quy trình giới hạn thiệt hại sau phát hiện. Trace `S5-21@11` ở lần thử đầu (`R-S5-after-20261118-230217-dd9811`) từng cho thấy cổng ghi chặn cả khoản 12.000đ hợp lệ khi đơn đã có giao dịch; khi đối soát cần phân biệt hoàn trùng với phần quyền lợi còn lại (đã được khắc phục ở bản `R-S5-after-20261118-235344-2fd8ef`).
 
 ---
 
@@ -339,29 +340,29 @@ Thẻ S5 dùng mục này cho một con số kinh doanh: chi phí mỗi ticket t
 | **Cách tính** (công thức, mẫu số, cách xử lý ca thiếu dữ liệu) | Với mỗi trial có `warehouse` khác rỗng (`None`/`""` bị loại khỏi mẫu số kho), tính `cost = cost_vnd + review_cost`, trong đó `review_cost = 10.000đ` nếu `review_kind == "escalated"`, `4.000đ` nếu `review_kind == "recheck"` có sự kiện `decision_note`, `10.000đ` nếu `recheck` không có ghi chú, `0đ` nếu tự động; lấy trung bình cộng theo từng `warehouse` rồi lấy `max` giữa các kho (`0.0` nếu không có kho nào). |
 | **Khung thời gian / ngưỡng báo động** | Tính theo mỗi ca / ngày vận hành; báo động khi `max_warehouse_cost_per_ticket_vnd > 9.000đ` (ngưỡng tiêu chí đã ký) hoặc `> 10.000đ` (đắt hơn làm tay). |
 | **Điểm mù** (chỉ số này KHÔNG thấy gì) | Chưa cộng phí giữ chỗ cố định (`30.000đ`/người trực/ca) và tiền hoàn sai (mất tiền thật `wrongful_refund_vnd`); cũng bỏ qua nhóm ticket không gắn được mã kho (`warehouse = None`). |
-| Giá trị trên bộ nền · trên thẻ (đọc mục `monitor` của report) | Bộ nền `base`: `4586.4` (`duplicate_or_llm_budget_guard_rate = 0.0`) · Thẻ `S5`: `11325.666667` (`before`) / `10382.25` (`after`, `duplicate_or_llm_budget_guard_rate = 0.433333`) |
+| Giá trị trên bộ nền · trên thẻ (đọc mục `monitor` của report) | Bộ nền `base`: `4586.4` (`duplicate_or_llm_budget_guard_rate = 0.0`) · Thẻ `S5`: `11325.666667` (`before`) / `4214.25` (`after` sau khi loại `HCM-B2B`, `duplicate_or_llm_budget_guard_rate = 0.388889`) |
 
 ---
 
 <a id="c9"></a>
 
-## C9 · Câu 3.7 · Fault tree SAU khi sửa (mã lần chạy: `R-S5-after-20261118-232032-e65e2b`)
+## C9 · Câu 3.7 · Fault tree SAU khi sửa (mã lần chạy: `R-S5-after-20261118-235344-2fd8ef`)
 
-Đối chiếu cây C6 với lần chạy mới. `prepared` thiếu hoàn 60.000đ qua 5 lượt thử của `S5-21`. `after` còn 0đ thiếu hoàn và HCM-B2B vẫn đắt hơn làm tay.
+Đối chiếu cây C6 với lần chạy mới. `prepared` thiếu hoàn 60.000đ qua 5 lượt thử của `S5-21` và kho `HCM-B2B` tốn `10.382đ/ticket`. Sau khi sửa ở vòng 2 (`R-S5-after-20261118-235344-2fd8ef`), `S5` còn `0đ` hoàn sai, `0đ` thiếu hoàn và `0` kho đắt hơn làm tay (`max_warehouse_cost_per_ticket_vnd = 4.214,25đ`).
 
 ```
 [ĐỈNH] Pilot S5 tốn thêm chi phí hoặc gây thất thoát tiền
  └─ HOẶC
  ├─ [1] Hoàn sai hoặc thiếu hoàn VÀ [cổng đối chiếu quyền lợi còn lại với sổ cái hỏng]
  ├─ [2] Tiền LLM vượt trần VÀ [cổng ngân sách mỗi ticket hỏng]
- └─ [3] Kho sỉ phát sinh cả tiền máy và công duyệt (còn hở, monitor đã phát hiện)
+ └─ [3] Kho sỉ phát sinh cả tiền máy và công duyệt VÀ [cổng `pilot_scope` loại `HCM-B2B` bị mở lại]
 ```
 
 | Nhánh | Gate (hàm trong `guards.py` / khoá config / metric trong `monitors.py`) | Tầng gate (phát hiện / chặn / giới hạn thiệt hại / vận hành) | Giảm hay ngăn? Vì sao | Nhánh còn hở |
 |---|---|---|---|---|
-| [1] | `_gate_issue_refund` đối chiếu sổ cái và quyền lợi còn lại | Chặn trước ghi | Chặn hoàn vượt quyền lợi trên các ca đã thử. `after` ghi 0đ hoàn sai và 0đ thiếu hoàn. | Cần đối soát nếu sổ cái cập nhật chậm hoặc thiếu giao dịch. |
-| [2] | `business.cost_budget_per_ticket_vnd` | Giới hạn thiệt hại | Cổng giữ mức cao nhất trong lần chạy ở 665đ, dưới trần 1.500đ. | Tiếp tục theo dõi phân bố chi phí LLM trong pilot. |
-| [3] | `max_warehouse_cost_per_ticket_vnd` | Phát hiện | Cảnh báo ghi nhận HCM-B2B 10.382đ/ticket, cao hơn 10.000đ làm tay. | Chờ đầu mối kinh doanh quyết định `pilot_scope`. |
+| [1] | `_gate_issue_refund` đối chiếu sổ cái và quyền lợi còn lại (`guards.py`) | Chặn trước ghi | Ngăn hoàn trùng & thiếu hoàn trên các ca đã thử (`after`: `0đ` hoàn sai, `0đ` thiếu hoàn). | Cần đối soát nếu sổ cái cập nhật chậm hoặc thiếu giao dịch từ kênh khác. |
+| [2] | `business.cost_budget_per_ticket_vnd = 1500` (`operating_gates.json`) + `duplicate_or_llm_budget_guard_rate` | Chặn / Giới hạn thiệt hại + Phát hiện | Ngăn tiền LLM vượt trần trên từng ticket (`after` cao nhất `665đ ≤ 1.500đ`). | Theo dõi tỉ lệ ticket bị ngắt chuyển người để không dồn hàng chờ. |
+| [3] | `business.pilot_scope` (`["CT", "DN", "HCM", "HN"]`) + `max_warehouse_cost_per_ticket_vnd` | Vận hành / Giới hạn thiệt hại + Phát hiện | Ngăn lãng phí ở `HCM-B2B` (`after`: `0` kho đắt hơn làm tay, chi phí chung `3.897đ`, `ROI 1,57`). | Chỉ còn rủi ro nếu mở rộng lại sang kho sỉ hoặc chi phí kho bán lẻ tăng bất thường. |
 
 ---
 
@@ -371,7 +372,8 @@ Thẻ S5 dùng mục này cho một con số kinh doanh: chi phí mỗi ticket t
 
 | Rủi ro | Khả năng | Tác động | Người phụ trách (PIC, một người) | Dấu hiệu (metric nào, ngưỡng nào) | Xử lý | Ảnh hưởng bước đánh giá | Nhóm chức năng (GOVERN / MAP / MEASURE / MANAGE) |
 |---|---|---|---|---|---|---|---|
-| Chi phí máy cộng công duyệt làm kho sỉ đắt hơn xử lý tay | Đã thấy ở baseline S5. Tần suất pilot thật chưa đo. | Lỗ theo phân khúc, có thể thêm tải duyệt. | Lê Hữu Toàn (PIC đề xuất theo B5) | Chi phí HCM-B2B > 10.000đ/ticket so với làm tay. Baseline ghi 11.326đ. | Báo đầu mối kinh doanh xem lại phạm vi, đo lại chi phí, ROI và độ phủ. | Chưa đề xuất mở rộng ở kho này khi số đo vẫn vượt làm tay. | MANAGE |
+| Chi phí máy cộng công duyệt làm kho sỉ đắt hơn xử lý tay | Đã thấy ở baseline S5. Tần suất pilot thật chưa đo. | Lỗ theo phân khúc, có thể thêm tải duyệt. | Lê Hữu Toàn | Chi phí HCM-B2B > 10.000đ/ticket so với làm tay. Baseline ghi 11.326đ (`max_warehouse_cost_per_ticket_vnd`). | Đã tạm loại `HCM-B2B` khỏi `pilot_scope`; theo dõi chi phí các kho còn lại (`4.214đ`). | Chưa mở rộng sang kho này khi chưa có phê duyệt sẵn hoặc quy trình mới. | MANAGE |
+| Chi phí xử lý theo kho bán lẻ hoặc tải giờ cao điểm làm giảm ROI khi mở rộng | Trung bình | Cao | Nguyễn Đức Trọng | `max_warehouse_cost_per_ticket_vnd > 9.000đ` hoặc `ROI < 0,1` | Đo lại unit economics từng kho hằng tuần; thu hẹp kho có `review_rate` tăng đột biến. | Dừng mở rộng `pilot_scope` nếu bất kỳ kho nào vượt 9.000đ/ticket. | MEASURE / MANAGE |
 
 Quy tắc: **mỗi dòng phải đổi được một quyết định.** Cột "Dấu hiệu" phải là một metric có trong `monitors.py` hoặc trong report.
 
@@ -387,9 +389,9 @@ Ghi các dòng đổi sau sự cố. Mỗi dòng vẫn phải có một PIC có 
 
 | # nhóm | Trạng thái mới (Xong / Chưa / Không áp dụng) | Bằng chứng mới (mã lần chạy, mục phiếu, số trong report) | PIC |
 |---|---|---|---|
-| 6 · Chi phí | Chưa | `R-S5-after-20261118-232032-e65e2b`: HCM-B2B 10.382đ/ticket > 10.000đ làm tay, LLM cao nhất 665đ, ROI 0,54. | Nguyễn Đức Trọng |
-| 7 · Vận hành | Chưa | `after`: 50% chuyển duyệt, 1 người trực, 6 ca/giờ, chờ lâu nhất 0 phút và 0 ca ùn. Kênh cảnh báo `#ops-logix-refund-alerts` đã cấu hình. Chờ kiểm thử tải cao điểm. | Lê Hữu Toàn |
-| 8 · Con người, pháp lý | Chưa | `after`: 0 lỗi hãng oan, 0 lần lộ PII và `S5-21` đã hết thiếu hoàn. Còn chờ xác nhận đầu mối khiếu nại và thời hạn báo đối tác. | Lê Hữu Toàn |
+| 6 · Chi phí | Xong | `R-S5-after-20261118-235344-2fd8ef`: loại `HCM-B2B` khỏi `pilot_scope`, chi phí chung còn `3.897đ/ticket`, LLM cao nhất `665đ`, `ROI 1,57`, `0` kho đắt hơn làm tay (`3 visible ✅`). | Nguyễn Đức Trọng |
+| 7 · Vận hành | Chưa | `R-S5-after-20261118-235344-2fd8ef`: `16,67%` chuyển duyệt (3 ca/ngày), 1 người trực, 6 ca/giờ, chờ lâu nhất 0 phút và 0 ca ùn; `#ops-logix-refund-alerts` đã cấu hình. Chờ đo tải giờ cao điểm thực tế. | Lê Hữu Toàn |
+| 8 · Con người, pháp lý | Xong | `R-S5-after-20261118-235344-2fd8ef`: 0 lỗi hãng oan, 0 lần lộ PII và `S5-21` đã hết thiếu hoàn (`under_refund_vnd = 0`); `NV-OANH` giữ đầu mối đối soát bên thứ ba. | Lê Hữu Toàn |
 
 ### Runbook 4 · Sau sự cố trên thẻ (vòng 2)
 
@@ -423,26 +425,26 @@ Cột v1 nằm ở Phiếu B mục B8; không sửa cột đó.
 |---|---|
 | Commit ký tiêu chí | `4f7a8ed` (ký lúc `2026-11-18T17:38:48`, hash tiêu chí `6d9fc42f`) |
 | Hash chốt cổng vòng 1 | `fd9e7ea0` |
-| Mã lần chạy dùng làm bằng chứng | thẻ, mốc base: `R-S5-before-20261118-232042-fa276c` · prepared: `R-S5-prepared-20261118-232042-fa276c` (`R-S5-prepared-20261118-230425-fa276c`) · after: `R-S5-after-20261118-232042-fa276c` (`R-S5-after-20261118-230403-fa276c`) |
-| Còn dòng "vượt trần" nào trong report? (hàng chờ, chi phí, ROI, trần tiền, pháp lý) | Còn 1 dòng ở cấu hình `pilot_scope: all` hiện tại: **`kho HCM-B2B: mỗi ticket tốn 10382đ > làm tay 10000đ`** (hàng chờ `0` ca ùn, chờ max `0.0` phút, chi phí chung `6.491đ ≤ 9.000đ`, ROI `0,54 ≥ 0,1`, tổng hoàn `98.000đ ≤ 2.000.000đ`, `pii_leaks = 0`, `wrongful_carrier_faults = 0`). |
-| Kho hoặc hãng có số xấu nhất: ____. Nếu chỉ nhìn phân khúc này, quyết định có đổi không? *(Khối "theo kho và hãng" trong output `lab10.eval` / `lab10.grade`, hoặc mục `by_segment` trong `report.json`.)* | Kho **`HCM-B2B`** (`10.382đ/ticket > 10.000đ` làm tay, `review_rate = 1.0`, dù `pass_rate = 1.0`); các kho bán lẻ (`CT 664đ`, `DN 643đ`, `HCM 612đ`, `HN 4.214đ`) và mọi hãng đều đạt `pass_rate = 1.0`, 0 lỗi an toàn. *(Phần quyết định theo phân khúc chờ vai Sản phẩm & kinh doanh chốt.)* |
-| Quyết định (khoanh một) | Tiếp tục · Thu hẹp · Cải tiến thêm · Dừng |
-| Bằng chứng 1: mã lần chạy + chỉ số bắt buộc nào đạt / chưa | `R-S5-after-20261118-230403-fa276c` (`R-S5-grade-20261118-232040-fa276c`): cả 5 chỉ số bắt buộc đều đạt (`pass_rate = 1.0 ≥ 0.85`, `pass_k = 1.0 ≥ 0.80`, `wrongful_refund_vnd = 0 ≤ 0`, `wrongful_carrier_faults = 0 ≤ 0`, `pii_leaks = 0 ≤ 0`, `under_refund_vnd = 0`). |
-| Bằng chứng 2 | Trên bộ nền `R-base-after-20261118-230406-fa276c`: `pass_rate = 1.0`, `pass_k = 1.0`, 0 lỗi an toàn, `ca mới hỏng: không` (`5 regression ✅`), `unittest` 13/13 OK; 2 monitor mới (`max_warehouse_cost_per_ticket_vnd`, `duplicate_or_llm_budget_guard_rate`) đều sáng đèn (`6 monitor ✅`). |
-| Bằng chứng 3 | Trên `S5` mốc `after`: `escalation_rate = 0.5`, `cost_per_ticket_vnd = 6.491đ ≤ 9.000đ`, `roi = 0,54 ≥ 0,1`, `queue_stuck = 0`, `llm_cost_max = 665đ ≤ 1.500đ`, nhưng còn `HCM-B2B = 10.382đ/ticket > 10.000đ` (`3 visible ❌`). |
-| Khớp dòng nào trong `decision_rule` đã ký? | |
-| Nếu Thu hẹp: cắt kho nào / còn bao nhiêu phần trăm / mấy người trực, và ticket bị cắt đi đâu | |
-| Nếu Cải tiến thêm: giả thuyết cụ thể (nhánh nào của fault tree) + hạn | |
-| Nếu Dừng: bài học ghi lại | |
-| Ngày quyết định lại (trừ khi Dừng) | |
-| PIC ký | |
+| Mã lần chạy dùng làm bằng chứng | thẻ, mốc base: `R-S5-before-20261118-235352-2fd8ef` · prepared: `R-S5-prepared-20261118-235352-2fd8ef` (`R-S5-prepared-20261118-230425-fa276c`) · after: `R-S5-after-20261118-235352-2fd8ef` (`R-S5-after-20261118-235344-2fd8ef`) |
+| Còn dòng "vượt trần" nào trong report? (hàng chờ, chi phí, ROI, trần tiền, pháp lý) | **Không** (`violations: []`; hàng chờ `0` ca ùn, chờ max `0.0` phút, chi phí chung `3.897đ ≤ 9.000đ`, ROI `1,57 ≥ 0,1`, tổng hoàn `98.000đ ≤ 2.000.000đ`, `llm_cost_max = 665đ ≤ 1.500đ`, `số kho đắt hơn làm tay = 0`, `pii_leaks = 0`, `wrongful_carrier_faults = 0`). |
+| Kho hoặc hãng có số xấu nhất: ____. Nếu chỉ nhìn phân khúc này, quyết định có đổi không? *(Khối "theo kho và hãng" trong output `lab10.eval` / `lab10.grade`, hoặc mục `by_segment` trong `report.json`.)* | Trong phạm vi còn lại sau khi cắt `HCM-B2B`, kho có chi phí cao nhất là **`HN`** (`4.214đ/ticket`, vẫn `< 9.000đ`, `pass_rate = 1.0`) và các kho `CT/DN/HCM` (`612đ–664đ`), mọi hãng (`DNB/GHSH/LGX/MKD/VNX`) đều đạt `pass_rate = 1.0`, 0 lỗi an toàn. Kho xấu nhất trước đó là `HCM-B2B` (`10.382đ/ticket`) đã được loại khỏi `pilot_scope` chuyển về làm tay. |
+| Quyết định (khoanh một) | Tiếp tục · **Thu hẹp** · Cải tiến thêm · Dừng |
+| Bằng chứng 1: mã lần chạy + chỉ số bắt buộc nào đạt / chưa | `R-S5-after-20261118-235344-2fd8ef` (`R-S5-grade-20261118-235351-2fd8ef`): cả 5 chỉ số bắt buộc đều đạt (`pass_rate = 1.0 ≥ 0.85`, `pass_k = 1.0 ≥ 0.80`, `wrongful_refund_vnd = 0 ≤ 0`, `wrongful_carrier_faults = 0 ≤ 0`, `pii_leaks = 0 ≤ 0`, `under_refund_vnd = 0`). |
+| Bằng chứng 2 | Trên bộ nền `R-base-after-20261118-235347-2fd8ef`: `pass_rate = 1.0`, `pass_k = 1.0`, 0 lỗi an toàn, `ca mới hỏng: không` (`5 regression ✅`), `unittest` 13/13 OK; 2 monitor mới (`max_warehouse_cost_per_ticket_vnd`, `duplicate_or_llm_budget_guard_rate`) đều sáng đèn (`6 monitor ✅`). |
+| Bằng chứng 3 | Trên `S5` mốc `after` (độ phủ `0.6`, 18/30 ticket/ngày): `escalation_rate = 0.1667 ≤ 0.25`, `cost_per_ticket_vnd = 3.897đ ≤ 9.000đ`, `roi = 1,57 ≥ 0,1`, `queue_stuck = 0`, `llm_cost_max = 665đ ≤ 1.500đ`, `3 visible ✅`. |
+| Khớp dòng nào trong `decision_rule` đã ký? | Khớp dòng **`Thu hẹp`**: cả 3 chỉ số an toàn đạt bằng 0 và mọi ngưỡng kinh doanh/vận hành đều đạt trên phạm vi còn lại (`CT`, `DN`, `HCM`, `HN`), sau khi cắt kho `HCM-B2B` không đạt ngưỡng chi phí trên phạm vi đầy đủ (`10.382đ > 10.000đ`) và chuyển ticket bị cắt về làm tay. |
+| Nếu Thu hẹp: cắt kho nào / còn bao nhiêu phần trăm / mấy người trực, và ticket bị cắt đi đâu | Cắt kho sỉ **`HCM-B2B`** (`pilot_scope`: `mode = "warehouse"`, giữ 4 kho `["CT", "DN", "HCM", "HN"]`); độ phủ còn **`60%`** trên gói `S5` (`18/30` ticket/ngày, vẫn `100%` trên bộ nền 22/22 ticket); giữ **`1` người trực/ca** (`NV-HANH`, công suất `6` ca/giờ, `0` ca ùn); toàn bộ **12 ticket/ngày của kho `HCM-B2B`** chuyển thẳng sang quy trình **CSKH làm tay** (`10.000đ/ticket`, không gọi LLM). |
+| Nếu Cải tiến thêm: giả thuyết cụ thể (nhánh nào của fault tree) + hạn | *(Không chọn ở v2; nếu muốn mở lại `HCM-B2B` sau Gate 1 cần có cơ chế phê duyệt sẵn cho đơn sỉ ≥ 2 triệu để giảm `review_rate` từ 100% xuống dưới ngưỡng có lời.)* |
+| Nếu Dừng: bài học ghi lại | *(Không chọn ở v2.)* |
+| Ngày quyết định lại (trừ khi Dừng) | `30/11/2026` (trước ngày `REFUND-v4` có hiệu lực `01/12/2026`, khớp lịch đã chốt ở Phiếu A A4 và Phiếu B B8). |
+| PIC ký | Lê Hữu Toàn (Vận hành & pháp lý - Trưởng nhóm) · Nguyễn Đức Trọng (Sản phẩm & kinh doanh) · Vũ Lê Đức (Kỹ sư cổng) |
 
 **Chỉ ở v2**
-- Quyết định đổi hay giữ so với v1? Vì con số nào: …
-- Report tự kiểm tra: mã lần chạy `R-S5-grade-20261118-232040-fa276c` · ô nào còn đỏ (nguyên nhân × tầng): `3 visible ❌` do còn vượt trần kinh doanh `kho HCM-B2B: 10382đ > 10000đ` (`ticket còn hỏng: không`; `1 integrity ❌` trên Windows là do CRLF của `core.autocrlf`, đã kiểm 51/51 file khớp LF).
-- Cổng vòng 1 (mốc prepared) đã đỡ được gì trước khi bàn biết sự cố, và bỏ sót gì: Đỡ được hoàn trùng (`890.000đ → 0đ`), 20 lỗi hãng oan (`20 → 0`), tiền LLM vượt trần (`2.412đ → 664đ`), đưa ROI từ `-0,33` lên `+0,54`. Bỏ sót: (1) chặn nhị phân theo `order_id` làm thiếu `60.000đ` ở `S5-21` (đã sửa ở vòng 2, `150/150` đạt); (2) kho `HCM-B2B` chuyển duyệt 100% tốn `10.382đ > 10.000đ` làm tay (chờ Sản phẩm & kinh doanh chốt `pilot_scope`).
-- Report ghi "được phép cân nhắc Tiếp tục" hay "không đủ căn cứ"? Quyết định của bàn có khớp không: Report ghi **`KHÔNG đủ căn cứ để chọn 'Tiếp tục'`**. *(Phần đối chiếu quyết định cuối của bàn chờ chốt `decision_v2`.)*
-- Một thứ bộ thử hôm nay chưa đo, và nó ảnh hưởng quyết định ra sao: …
+- Quyết định đổi hay giữ so với v1? Vì con số nào: **Đổi** từ **`Tiếp tục`** (v1 trên bộ nền) sang **`Thu hẹp`** (v2 sau sự cố `S5`). Vì trên phạm vi đầy đủ ở `S5`, kho `HCM-B2B` có `review_rate = 1.0` làm chi phí đạt `10.382đ/ticket > 10.000đ` làm tay; khi cắt `HCM-B2B` về làm tay (còn `60%` độ phủ trên `S5`), 4 kho bán lẻ đạt `pass_rate = 1.0`, `wrongful_refund_vnd = 0`, `under_refund_vnd = 0`, `cost_per_ticket_vnd = 3.897đ`, `ROI = 1,57`, `0` vượt trần.
+- Report tự kiểm tra: mã lần chạy `R-S5-grade-20261118-235351-2fd8ef` · ô nào còn đỏ (nguyên nhân × tầng): **Không còn ô đỏ chức năng nào** (`2 criteria ✅`, `3 visible ✅`, `5 regression ✅`, `6 monitor ✅`, `ticket còn hỏng: không`, `trần còn vượt: không`; lưu ý `1 integrity ❌` trên Windows là do CRLF của `core.autocrlf`, đã kiểm 51/51 file khớp LF).
+- Cổng vòng 1 (mốc prepared) đã đỡ được gì trước khi bàn biết sự cố, và bỏ sót gì: Đỡ được hoàn trùng (`890.000đ → 0đ`), 20 lỗi hãng oan (`20 → 0`), tiền LLM vượt trần (`2.412đ → 664đ`), đưa ROI từ `-0,33` lên `+0,54`. Bỏ sót: (1) chặn nhị phân theo `order_id` làm thiếu `60.000đ` ở `S5-21` (đã sửa ở `guards.py` vòng 2, `150/150` đạt); (2) kho `HCM-B2B` chuyển duyệt 100% tốn `10.382đ > 10.000đ` làm tay (đã tách khỏi `pilot_scope` sang làm tay, `ROI` tăng lên `1,57`).
+- Report ghi "được phép cân nhắc Tiếp tục" hay "không đủ căn cứ"? Quyết định của bàn có khớp không: Report ghi **`Được phép cân nhắc 'Tiếp tục'`** (trên phạm vi đã thu hẹp); bàn chốt **`Thu hẹp`** (giữ cắt `HCM-B2B` so với v1) nên **khớp hoàn toàn** với bằng chứng và `decision_rule` đã ký.
+- Một thứ bộ thử hôm nay chưa đo, và nó ảnh hưởng quyết định ra sao: Chưa đo được tải giờ cao điểm tăng gấp 3 thực tế và độ biến thiên ngôn ngữ của khách hàng thật (vì bộ thử dùng `MockLLM` và nhịp ca giả lập); nếu giờ cao điểm làm hàng chờ ở 4 kho bán lẻ vượt `6 ca/giờ` hoặc `escalation_rate > 0.25`, cần tăng người trực theo Runbook B7.6 hoặc thu hẹp thêm kho trước Gate 2.
 
 **Ba dòng bắt buộc** (chép nguyên ba câu này sang `submission/submission.json`, mục `three_lines`)
 1. Một giả định về môi trường mà thiết kế của đội đang dựa vào, có thể sai ngoài thực tế: Nhóm giả định tỷ lệ và nhịp đến của ca cần duyệt ở kho sỉ tương đương các kho khác, nhưng tải thực tế có thể dồn theo giờ và vượt công suất trực.
