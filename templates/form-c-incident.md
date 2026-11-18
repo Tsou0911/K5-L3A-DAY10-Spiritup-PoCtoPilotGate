@@ -421,15 +421,15 @@ Cột v1 nằm ở Phiếu B mục B8; không sửa cột đó.
 
 | | **v2** (phút 185–200, SAU sự cố) |
 |---|---|
-| Commit ký tiêu chí | phải giống v1 |
-| Hash chốt cổng vòng 1 | phải giống v1 |
-| Mã lần chạy dùng làm bằng chứng | thẻ, mốc base: ________ · prepared: ________ · after: ________ |
-| Còn dòng "vượt trần" nào trong report? (hàng chờ, chi phí, ROI, trần tiền, pháp lý) | |
-| Kho hoặc hãng có số xấu nhất: ____. Nếu chỉ nhìn phân khúc này, quyết định có đổi không? *(Khối "theo kho và hãng" trong output `lab10.eval` / `lab10.grade`, hoặc mục `by_segment` trong `report.json`.)* | |
+| Commit ký tiêu chí | `4f7a8ed` (ký lúc `2026-11-18T17:38:48`, hash tiêu chí `6d9fc42f`) |
+| Hash chốt cổng vòng 1 | `fd9e7ea0` |
+| Mã lần chạy dùng làm bằng chứng | thẻ, mốc base: `R-S5-before-20261118-232042-fa276c` · prepared: `R-S5-prepared-20261118-232042-fa276c` (`R-S5-prepared-20261118-230425-fa276c`) · after: `R-S5-after-20261118-232042-fa276c` (`R-S5-after-20261118-230403-fa276c`) |
+| Còn dòng "vượt trần" nào trong report? (hàng chờ, chi phí, ROI, trần tiền, pháp lý) | Còn 1 dòng ở cấu hình `pilot_scope: all` hiện tại: **`kho HCM-B2B: mỗi ticket tốn 10382đ > làm tay 10000đ`** (hàng chờ `0` ca ùn, chờ max `0.0` phút, chi phí chung `6.491đ ≤ 9.000đ`, ROI `0,54 ≥ 0,1`, tổng hoàn `98.000đ ≤ 2.000.000đ`, `pii_leaks = 0`, `wrongful_carrier_faults = 0`). |
+| Kho hoặc hãng có số xấu nhất: ____. Nếu chỉ nhìn phân khúc này, quyết định có đổi không? *(Khối "theo kho và hãng" trong output `lab10.eval` / `lab10.grade`, hoặc mục `by_segment` trong `report.json`.)* | Kho **`HCM-B2B`** (`10.382đ/ticket > 10.000đ` làm tay, `review_rate = 1.0`, dù `pass_rate = 1.0`); các kho bán lẻ (`CT 664đ`, `DN 643đ`, `HCM 612đ`, `HN 4.214đ`) và mọi hãng đều đạt `pass_rate = 1.0`, 0 lỗi an toàn. *(Phần quyết định theo phân khúc chờ vai Sản phẩm & kinh doanh chốt.)* |
 | Quyết định (khoanh một) | Tiếp tục · Thu hẹp · Cải tiến thêm · Dừng |
-| Bằng chứng 1: mã lần chạy + chỉ số bắt buộc nào đạt / chưa | |
-| Bằng chứng 2 | |
-| Bằng chứng 3 | |
+| Bằng chứng 1: mã lần chạy + chỉ số bắt buộc nào đạt / chưa | `R-S5-after-20261118-230403-fa276c` (`R-S5-grade-20261118-232040-fa276c`): cả 5 chỉ số bắt buộc đều đạt (`pass_rate = 1.0 ≥ 0.85`, `pass_k = 1.0 ≥ 0.80`, `wrongful_refund_vnd = 0 ≤ 0`, `wrongful_carrier_faults = 0 ≤ 0`, `pii_leaks = 0 ≤ 0`, `under_refund_vnd = 0`). |
+| Bằng chứng 2 | Trên bộ nền `R-base-after-20261118-230406-fa276c`: `pass_rate = 1.0`, `pass_k = 1.0`, 0 lỗi an toàn, `ca mới hỏng: không` (`5 regression ✅`), `unittest` 13/13 OK; 2 monitor mới (`max_warehouse_cost_per_ticket_vnd`, `duplicate_or_llm_budget_guard_rate`) đều sáng đèn (`6 monitor ✅`). |
+| Bằng chứng 3 | Trên `S5` mốc `after`: `escalation_rate = 0.5`, `cost_per_ticket_vnd = 6.491đ ≤ 9.000đ`, `roi = 0,54 ≥ 0,1`, `queue_stuck = 0`, `llm_cost_max = 665đ ≤ 1.500đ`, nhưng còn `HCM-B2B = 10.382đ/ticket > 10.000đ` (`3 visible ❌`). |
 | Khớp dòng nào trong `decision_rule` đã ký? | |
 | Nếu Thu hẹp: cắt kho nào / còn bao nhiêu phần trăm / mấy người trực, và ticket bị cắt đi đâu | |
 | Nếu Cải tiến thêm: giả thuyết cụ thể (nhánh nào của fault tree) + hạn | |
@@ -439,9 +439,9 @@ Cột v1 nằm ở Phiếu B mục B8; không sửa cột đó.
 
 **Chỉ ở v2**
 - Quyết định đổi hay giữ so với v1? Vì con số nào: …
-- Report tự kiểm tra: mã lần chạy `__________` · ô nào còn đỏ (nguyên nhân × tầng): …
-- Cổng vòng 1 (mốc prepared) đã đỡ được gì trước khi bàn biết sự cố, và bỏ sót gì: …
-- Report ghi "được phép cân nhắc Tiếp tục" hay "không đủ căn cứ"? Quyết định của bàn có khớp không: …
+- Report tự kiểm tra: mã lần chạy `R-S5-grade-20261118-232040-fa276c` · ô nào còn đỏ (nguyên nhân × tầng): `3 visible ❌` do còn vượt trần kinh doanh `kho HCM-B2B: 10382đ > 10000đ` (`ticket còn hỏng: không`; `1 integrity ❌` trên Windows là do CRLF của `core.autocrlf`, đã kiểm 51/51 file khớp LF).
+- Cổng vòng 1 (mốc prepared) đã đỡ được gì trước khi bàn biết sự cố, và bỏ sót gì: Đỡ được hoàn trùng (`890.000đ → 0đ`), 20 lỗi hãng oan (`20 → 0`), tiền LLM vượt trần (`2.412đ → 664đ`), đưa ROI từ `-0,33` lên `+0,54`. Bỏ sót: (1) chặn nhị phân theo `order_id` làm thiếu `60.000đ` ở `S5-21` (đã sửa ở vòng 2, `150/150` đạt); (2) kho `HCM-B2B` chuyển duyệt 100% tốn `10.382đ > 10.000đ` làm tay (chờ Sản phẩm & kinh doanh chốt `pilot_scope`).
+- Report ghi "được phép cân nhắc Tiếp tục" hay "không đủ căn cứ"? Quyết định của bàn có khớp không: Report ghi **`KHÔNG đủ căn cứ để chọn 'Tiếp tục'`**. *(Phần đối chiếu quyết định cuối của bàn chờ chốt `decision_v2`.)*
 - Một thứ bộ thử hôm nay chưa đo, và nó ảnh hưởng quyết định ra sao: …
 
 **Ba dòng bắt buộc** (chép nguyên ba câu này sang `submission/submission.json`, mục `three_lines`)
